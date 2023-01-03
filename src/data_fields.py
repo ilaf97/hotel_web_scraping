@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup, ResultSet
 #TODO: Delete import
-from html_extraction import ExtractHtml
+from src.html_extraction import ExtractHtml
 
 
 class DataFields:
@@ -99,5 +99,5 @@ class DataFields:
 eh = ExtractHtml('https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
 html_obj = eh.parse_html()
 df = DataFields(html_obj)
-print(df.get_description())
+print(df.get_excursions())
 

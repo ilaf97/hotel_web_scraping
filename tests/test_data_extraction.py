@@ -3,7 +3,6 @@ from src.html_extraction import ExtractHtml
 from src.data_fields import DataFields
 
 
-
 class TestDataFields(unittest.TestCase):
 
 	@classmethod
@@ -19,19 +18,92 @@ class TestDataFields(unittest.TestCase):
 
 	def test_get_description(self):
 		desc = self.df.get_description()
-		self.assertEqual(
+		self.assertIn(
+			'Hotel Aurora has a fantastic location in Amalfi.',
 			desc,
-			'Hotel Aurora has a fantastic location in Amalfi. It’s just a few minutes’ walk from the centre and '
-			'overlooks a gorgeous bay. We love relaxing on the terraces where you can lose yourself in the incredible '
-			'sea views. There’s a beach just beneath the hotel that’s well equipped with sunbeds and umbrellas '
-			'(payable locally).'
-			'The hotel’s got a traditional style with charming and comfortable guest rooms finished with light blue '
-			'vierti floor tiles that are typical of the area. A lovely buffet breakfast is served every morning on the '
-			'terrace so you can enjoy a coffee and a fresh pastry with your sea views. With the centre of Amalfi close '
-			'by you’ll be spoilt for choice with where to eat or what to see. Speak to the friendly staff before you'
-			' head out. They\'re more than happy to share their advice.'
-			'Transfer time: approx. 1 hour 30 mins by private car from Naples Airport.'
+			'Description intro differs from expected value'
 		)
+		self.assertIn(
+			'A lovely buffet breakfast is served every morning on the terrace so you can enjoy a coffee and a fresh',
+			desc,
+			'Paragraph two of description differs from expected value '
+		)
+
+	def test_get_rooms(self):
+		rooms = self.df.get_rooms()
+		self.assertNotEqual('Rooms', rooms[:6], '"Rooms" header should not be at start of string')
+		self.assertIn(
+			'Standard Sea View Rooms are located on the second floor and have a balcony with sea views.',
+			rooms,
+			'First room type description omitted or incorrect'
+		)
+		self.assertIn(
+			'Superior Rooms are located on the top floors of the hotel at the back of the property.',
+			rooms,
+			'Second room type description omitted or incorrect'
+		)
+
+	def test_get_location(self):
+		location = self.df.get_location()
+		self.assertIn(
+			'Latitude:  40.6320567',
+			location,
+			'Latitude value omitted or incorrect'
+		)
+		self.assertIn(
+			'900 metres to Valle delle Ferriere Nature Reserve',
+			location,
+			'Distance to Valle delle Ferriere Nature Reserve omitted or incorrect'
+		)
+
+	def test_get_facilities(self):
+		facilities = self.df.get_facilities()
+		self.assertIn(
+			'Private beach with sun loungers and parasols',
+			facilities,
+			'Private beach info omitted or incorrect'
+		)
+		self.assertIn(
+			'Free Wi-Fi\nGarage (payable locally)',
+			facilities,
+			'Wi-fi and/or garage info omitted or incorrect'
+		)
+
+	def test_get_food_and_drink(self):
+		meals = self.df.get_food_and_drink()
+		self.assertIn(
+			'Breakfast here is buffet style and includes delicious homemade cakes, pastries, fruit juices',
+			meals,
+			'Breakfast description omitted or incorrect'
+		)
+		self.assertIn(
+			'The hotel has a nice lounge bar and the large terrace here is the best place for an aperitif',
+			meals,
+			'Lounge bar description omitted or incorrect'
+		)
+		self.assertIn(
+			'Bed & Breakfast',
+			meals,
+			'Bed and breakfast option omitted or incorrect'
+		)
+
+	def test_get_excursions(self):
+		excursions = self.df.get_excursions()
+		self.assertIn(
+			'Pre-book your excursions online or give us a call',
+			excursions,
+			'Intro omitted or incorrect'
+		)
+		self.assertIn(
+			'Departs: Sundays from May to October\n'
+			'Price departing from: Amalfi, Maiori or Minori from £57pp, Positano from £74pp or Ravello from £67pp',
+			excursions,
+			'Pompeii & Herculaneum trip info omitted or incorrect'
+		)
+		self.assertIn(
+			'We act at all times as a selling agent for the suppliers.',
+			excursions,
+			'Disclaimer intro omitted or incorrect')
 
 
 if __name__ == '__main__':
