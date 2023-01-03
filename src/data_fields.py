@@ -71,6 +71,16 @@ class DataFields:
 		"""Returns available excursions from the hotel"""
 		return self.__get_all_tab_div_content('2')
 
+	def get_images(self):
+		"""Returns all images URLS for hotel"""
+		image_objs = self.html_object.find_all('div', class_='c-slider__list')[0]
+		img_tags = image_objs.find_all('img')
+		img_name = image_objs.find_all('div', class_='c-slider__caption')
+		image_data = {}
+		for index, image in enumerate(img_tags):
+			image_data[img_name[index].text] = image['data-cloudinarymainslider']
+		return image_data
+
 	def __get_all_tab_div_content(self, panel_no: str) -> str:
 		"""Retrieve all div content from given tab.
 		Params:
@@ -94,10 +104,4 @@ class DataFields:
 		for obj in html_objs:
 			output_str = output_str + obj.text.strip() + '\n'
 		return output_str
-
-
-eh = ExtractHtml('https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
-html_obj = eh.parse_html()
-df = DataFields(html_obj)
-print(df.get_excursions())
 

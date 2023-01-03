@@ -105,6 +105,14 @@ class TestDataFields(unittest.TestCase):
 			excursions,
 			'Disclaimer intro omitted or incorrect')
 
+	def test_get_images(self):
+		images_dict = self.df.get_images()
+		self.assertEqual(
+			images_dict['Superior Room'],
+			'https://res.cloudinary.com/dqc68ksfw/image/upload/v1/Inghams/media/13072047/aurora03.jpg',
+			'Image URL omitted or incorrect'
+		)
+
 
 if __name__ == '__main__':
 	unittest.main()
