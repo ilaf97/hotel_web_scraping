@@ -3,13 +3,13 @@ from src.html_extraction import ExtractHtml
 from src.inghams.data_fields import InghamsDataFields
 
 
-class TestDataFields(unittest.TestCase):
+class TestInghamsDataFields(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls) -> None:
 		eh = ExtractHtml(
 			'https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
-		html_obj = eh.parse_html()
+		html_obj = eh.parse_html_bs()
 		cls.df = InghamsDataFields(html_obj)
 
 	def test_get_name(self):

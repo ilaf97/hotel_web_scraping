@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import datetime
+import os
 from selenium.webdriver.chrome.webdriver import WebDriver
 from tqdm import tqdm
 
@@ -15,9 +16,9 @@ def get_html_obj(url: str) -> BeautifulSoup:
 	return ex_html.parse_html_bs()
 
 
-def get_driver_obj(url: str, webdrvier_path: str) -> WebDriver:
+def get_driver_obj(url: str) -> WebDriver:
 	ex_html = ExtractHtml(url)
-	return ex_html.parse_html_selenium(webdrvier_path)
+	return ex_html.parse_html_selenium()
 
 
 def get_inghams_data_fields(html_obj: BeautifulSoup) -> list[str]:
@@ -35,8 +36,8 @@ def get_inghams_data_fields(html_obj: BeautifulSoup) -> list[str]:
 	return data_fields_list
 
 
-def get_tui_data_fields(html_obj: BeautifulSoup) -> list[str]:
-	data_fields = TuiDataFields(html_obj)
+def get_tui_data_fields(driver: WebDriver) -> list[str]:
+	data_fields = TuiDataFields(driver)
 	data_fields_list = [
 		data_fields.get_name(),
 		data_fields.get_description(),
@@ -70,7 +71,7 @@ if __name__ == '__main__':
 	)
 	tui_save_data.create_file()
 	for url in tqdm(tui_url_list):
-		driver_obj = get_driver_obj(url, '../chromedriver')
+		driver_obj = get_driver_obj(url)
 		hotel_data = get_tui_data_fields(driver_obj)
 		tui_save_data.add_data(hotel_data)
 

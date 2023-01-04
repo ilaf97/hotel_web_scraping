@@ -4,6 +4,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 import time
 
+from src.html_extraction import ExtractHtml
+
 
 class TuiDataFields:
 
@@ -46,10 +48,10 @@ class TuiDataFields:
 		room_str = ''
 		self.driver.find_element(By.XPATH, '//*[@id="rooms"]/a').click()
 		rooms = self.driver.find_elements(By.CLASS_NAME, 'UI__roomListWrapper')
-		for room in rooms:
+		for index, room in enumerate(rooms, start=1):
 			room_str = room_str + room.find_element(
 				By.XPATH,
-				'//*[@id="roomsList__component"]/div/div/div[2]/div[1]/div[2]/div[1]'
+				f'//*[@id="roomsList__component"]/div/div/div[2]/div[{index}]/div[2]/div[1]'
 			).text.strip()
 		return room_str
 
@@ -79,7 +81,6 @@ class TuiDataFields:
 	def get_images(self):
 		"""Returns all images URLS for hotel"""
 		hotel_images = []
-
 		self.driver.find_element(
 			By.XPATH,
 			'//*[@id="heroBannerV2__component"]/div/div/div[1]/div[2]/ul/li/section/span/a'

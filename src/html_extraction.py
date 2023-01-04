@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from requests import HTTPError
 
 
@@ -25,10 +24,10 @@ class ExtractHtml:
 			'html.parser'
 		)
 
-	def parse_html_selenium(self, web_driver_path):
+	def parse_html_selenium(self):
 		opts = webdriver.ChromeOptions()
 		opts.add_argument('--incognito')
-		driver = webdriver.Chrome(executable_path=web_driver_path, options=opts)
+		driver = webdriver.Chrome(options=opts)
 		driver.get(self.url)
 		return driver
 
