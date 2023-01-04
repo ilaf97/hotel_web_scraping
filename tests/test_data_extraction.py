@@ -1,6 +1,6 @@
 import unittest
 from src.html_extraction import ExtractHtml
-from src.data_fields import DataFields
+from src.inghams.data_fields import InghamsDataFields
 
 
 class TestDataFields(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestDataFields(unittest.TestCase):
 		eh = ExtractHtml(
 			'https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
 		html_obj = eh.parse_html()
-		cls.df = DataFields(html_obj)
+		cls.df = InghamsDataFields(html_obj)
 
 	def test_get_name(self):
 		name = self.df.get_name()

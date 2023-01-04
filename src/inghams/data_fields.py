@@ -1,9 +1,7 @@
 from bs4 import BeautifulSoup, ResultSet
-#TODO: Delete import
-from src.html_extraction import ExtractHtml
 
 
-class DataFields:
+class InghamsDataFields:
 
 	"""
 	Class allowing data from required fields to be scraped from hotel page's HTML object.

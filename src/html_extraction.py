@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from requests import HTTPError
 
 
@@ -17,12 +19,16 @@ class ExtractHtml:
 	def get_html_text(self) -> str:
 		return self.__page.text
 
-	def parse_html(self) -> BeautifulSoup:
+	def parse_html_bs(self) -> BeautifulSoup:
 		return BeautifulSoup(
 			self.__page.content,
 			'html.parser'
 		)
 
+	def parse_html_selenium(self, web_driver_path):
+		opts = webdriver.ChromeOptions()
+		opts.add_argument('--incognito')
+		driver = webdriver.Chrome(executable_path=web_driver_path, options=opts)
+		driver.get(self.url)
+		return driver
 
-ht = ExtractHtml('https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
-#print(ht.parse_html())
