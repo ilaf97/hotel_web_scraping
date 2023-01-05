@@ -45,14 +45,14 @@ class TestInghamsDataFields(unittest.TestCase):
 
 	def test_get_location(self):
 		location = self.df.get_location()
-		self.assertIn(
-			'Latitude:  40.6320567',
-			location,
-			'Latitude value omitted or incorrect'
+		self.assertEqual(
+			[40.6320567, 14.5947055],
+			location['lat_long'],
+			'Latitude and longitude values omitted or incorrect'
 		)
 		self.assertIn(
 			'900 metres to Valle delle Ferriere Nature Reserve',
-			location,
+			location['description'],
 			'Distance to Valle delle Ferriere Nature Reserve omitted or incorrect'
 		)
 

@@ -51,15 +51,15 @@ class TestTuiDataFields(unittest.TestCase):
 
 	def test_get_location(self):
 		location = self.df.get_location()
-		self.assertIn(
-			'200m to the resort centre',
-			location,
-			'Distance to resort centre omitted or incorrect'
+		self.assertEqual(
+			[45.574652559, 10.710902962],
+			location['lat_long'],
+			'latitude or longitude values omitted or incorrect'
 		)
 		self.assertIn(
 			'GETTING TO HOTEL',
-			location,
-			'second subheading omitted or incorrect'
+			location['description'],
+			'Second subheading omitted or incorrect'
 		)
 
 	def test_get_facilities(self):

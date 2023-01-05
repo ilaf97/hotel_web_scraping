@@ -1,3 +1,4 @@
+from typing import Union
 from bs4 import BeautifulSoup, ResultSet
 
 
@@ -25,22 +26,22 @@ class InghamsDataFields:
 	"""
 
 	def __init__(self, html_object: BeautifulSoup):
-		self.html_object = html_object
+		self.__html_object = html_object
 
 	def get_name(self) -> str:
 		"""Returns hotel name"""
-		hotel_name_html_obj = self.html_object.find_all('h1', class_='c-heading-h1')[0]
+		hotel_name_html_obj = self.__html_object.find_all('h1', class_='c-heading-h1')[0]
 		return hotel_name_html_obj.text.strip()
 
 	def get_description(self) -> str:
 		"""Returns description of hotel"""
-		description_html_objs = self.html_object.find(id='descriptionAccTop')
+		description_html_objs = self.__html_object.find(id='descriptionAccTop')
 		p_tags = description_html_objs.find_all('p')
 		return self.__format_text(p_tags)
 
 	def get_rooms(self) -> str:
 		"""Returns rooms available at hotel"""
-		accommodation_tab_objs = self.html_object.find(id='tabpanel0')
+		accommodation_tab_objs = self.__html_object.find(id='tabpanel0')
 		p_tags = accommodation_tab_objs.find_all('p')
 		for index, p in enumerate(p_tags):
 			if p.text.strip() == 'Rooms':
@@ -48,16 +49,20 @@ class InghamsDataFields:
 				break
 		return self.__format_text(room_description)
 
-	def get_location(self) -> str:
+	def get_location(self) -> dict[str: Union[str, list[int]]]:
 		"""Returns hotel's location"""
-		location_tab_objs = self.html_object.find(id='tabpanel5')
-		header = location_tab_objs.find_all('div', class_='panel-ski-title')[0].text.strip()
-		ul_tags = location_tab_objs.find_all('ul')[0]
-		return header + '\n' + self.__format_text(ul_tags)
+		location_dict = {}
+		location_tab_objs = self.__html_object.find(id='tabpanel5')
+		li_tags = location_tab_objs.find_all('li')
+		latitude = float(li_tags[1].text.split(': ')[1])
+		longitude = float(li_tags[0].text.split(': ')[1])
+		location_dict['description'] = li_tags[2].text.strip()
+		location_dict['lat_long'] = [latitude, longitude]
+		return location_dict
 
 	def get_facilities(self) -> str:
 		"""Returns facilities available at hotel"""
-		facilities_tab_objs = self.html_object.find(id='tabpanel3')
+		facilities_tab_objs = self.__html_object.find(id='tabpanel3')
 		ul_tags = facilities_tab_objs.find_all('ul')
 		return self.__format_text(ul_tags)
 
@@ -71,7 +76,7 @@ class InghamsDataFields:
 
 	def get_images(self):
 		"""Returns all images URLS for hotel"""
-		image_objs = self.html_object.find_all('div', class_='c-slider__list')[0]
+		image_objs = self.__html_object.find_all('div', class_='c-slider__list')[0]
 		img_tags = image_objs.find_all('img')
 		img_name = image_objs.find_all('div', class_='c-slider__caption')
 		image_data = {}
@@ -86,7 +91,7 @@ class InghamsDataFields:
 
 		Returns:
 		Formatted string of div element's text representation"""
-		tab_objs = self.html_object.find(id='tabpanel' + panel_no)
+		tab_objs = self.__html_object.find(id='tabpanel' + panel_no)
 		div = tab_objs.find_all('div', class_='c-accordion__content')
 		return self.__format_text(div)
 

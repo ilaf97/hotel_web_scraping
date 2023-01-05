@@ -16,15 +16,18 @@ class ExtractHtml:
 			raise ConnectionError(f'Cannot connect to server: there is a network problem!\n{e}')
 
 	def get_html_text(self) -> str:
+		"""Return page's plain HTML text representation"""
 		return self.__page.text
 
 	def parse_html_bs(self) -> BeautifulSoup:
+		"""Return BeautifulSoup object from parsing HTML"""
 		return BeautifulSoup(
 			self.__page.content,
 			'html.parser'
 		)
 
 	def parse_html_selenium(self):
+		"""Return Selenium WebDriver object from parsing HTML"""
 		opts = webdriver.ChromeOptions()
 		opts.add_argument('--incognito')
 		driver = webdriver.Chrome(options=opts)
