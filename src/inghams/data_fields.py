@@ -60,11 +60,14 @@ class InghamsDataFields:
 		location_dict['lat_long'] = [latitude, longitude]
 		return location_dict
 
-	def get_facilities(self) -> str:
+	def get_facilities(self) -> list[str]:
 		"""Returns facilities available at hotel"""
+		facilities_list = []
 		facilities_tab_objs = self.__html_object.find(id='tabpanel3')
 		ul_tags = facilities_tab_objs.find_all('ul')
-		return self.__format_text(ul_tags)
+		for item in ul_tags:
+			facilities_list.append(item.text.strip())
+		return facilities_list
 
 	def get_food_and_drink(self) -> str:
 		"""Returns meal options"""
@@ -81,7 +84,10 @@ class InghamsDataFields:
 		img_name = image_objs.find_all('div', class_='c-slider__caption')
 		image_data = {}
 		for index, image in enumerate(img_tags):
-			image_data[img_name[index].text] = image['data-cloudinarymainslider']
+			image_data[img_name[index].text] = {
+				'src': image['data-cloudinarymainslider'],
+				'alt': image['alt']
+			}
 		return image_data
 
 	def __get_all_tab_div_content(self, panel_no: str) -> str:

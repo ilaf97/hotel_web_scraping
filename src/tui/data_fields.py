@@ -32,6 +32,7 @@ class TuiDataFields:
 	def __init__(self, driver: WebDriver):
 		self.__driver = driver
 		self.__dismiss_cookies_banner()
+		self.__page_source = driver.page_source
 
 	def get_name(self) -> str:
 		"""Returns hotel name"""
@@ -59,26 +60,26 @@ class TuiDataFields:
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
 		"""Returns hotel's location"""
 		location_dict = {}
-		page_source = self.__driver.page_source
 		self.__driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
 		location_dict['description'] = \
 			self.__driver.find_element(
 				By.XPATH,
 				'//*[@id="locationEditorial__component"]/div/div/div/aside'
 			).text.strip()
-		lat_long = json.loads(page_source.split('"geo":')[1].split('}')[0] + '}')
+		lat_long = json.loads(self.__page_source.split('"geo":')[1].split('}')[0] + '}')
 		latitude = float(lat_long['latitude'])
 		longitude = float(lat_long['longitude'])
 		location_dict['lat_long'] = [latitude, longitude]
 		return location_dict
 
-	def get_facilities(self) -> str:
+	def get_facilities(self) -> list[str]:
 		"""Returns facilities available at hotel"""
-		facilities = self.__driver.find_element(
-			By.XPATH,
-			'//*[@id="accomEditorial__component"]/div/div/div/aside/div[1]/div[2]'
-		).text.strip()
-		return facilities
+		facility_list = []
+		facilities_data = json.loads(self.__page_source.split('accommFacilitiesJsonData = ')[1].split('};')[0] + '}')
+		facilities = facilities_data['facilities']
+		for facility in facilities:
+			facility_list.append(facility['name'].lower())
+		return facility_list
 
 	def get_food_and_drink(self) -> str:
 		"""Returns meal options"""
@@ -92,16 +93,15 @@ class TuiDataFields:
 	def get_images(self):
 		"""Returns all images URLS for hotel"""
 		hotel_images = []
-		self.__driver.find_element(
-			By.XPATH,
-			'//*[@id="heroBannerV2__component"]/div/div/div[1]/div[2]/ul/li/section/span/a'
-		).click()
-		time.sleep(1)
-		banner_images_container = self.__driver.find_element(By.CLASS_NAME, 'Galleries__thumbNailView')
-		banner_images = banner_images_container.find_elements(By.TAG_NAME, 'img')
-		for image in banner_images:
-			# Get image source, removing resize params whilst doing so
-			hotel_images.append(image.get_attribute('src').split('?')[0])
+		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')
+		gallery_images = gallery_data['galleryImages']
+		for image in gallery_images:
+			src = image['mainSrc'].split('?')[0]
+			if src not in hotel_images:
+				# Get image source, removing resize params whilst doing so
+				hotel_images.append(src)
+			else:
+				break
 		return hotel_images
 
 	def __dismiss_cookies_banner(self):
@@ -130,4 +130,4 @@ eh = ExtractHtml(
 			'https://www.tui.co.uk/destinations/italy/lake-garda/garda/hotels/hotel-la-perla.html')
 driver = eh.parse_html_selenium()
 df = TuiDataFields(driver)
-print(df.get_location())
+print(df.get_facilities())

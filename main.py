@@ -30,8 +30,8 @@ def get_inghams_data_fields(html_obj: BeautifulSoup) -> list[str]:
 		data_fields.get_location(),
 		data_fields.get_facilities(),
 		data_fields.get_food_and_drink(),
-		data_fields.get_excursions(),
-		data_fields.get_images()
+		data_fields.get_images(),
+		data_fields.get_excursions()
 	]
 	return data_fields_list
 
@@ -74,7 +74,6 @@ if __name__ == '__main__':
 		driver_obj = get_driver_obj(url)
 		hotel_data = get_tui_data_fields(driver_obj)
 		tui_save_data.add_data(hotel_data)
-
-
+	driver_obj.close()
 
 
