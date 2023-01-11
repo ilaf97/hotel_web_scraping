@@ -17,7 +17,8 @@ class TuiDataFields:
 	- driver (WebDriver): the hotel's web page JavaScript driver object as found by Selenium
 
 	Attributes:
-	- driver (WebDriver)
+	- __driver (WebDriver) (Private)
+	- __page_source (str) (Private)
 
 	Methods:
 	- get_name()
@@ -125,9 +126,3 @@ class TuiDataFields:
 				return
 			except NoSuchElementException as e:
 				raise Exception(f'Cannot close the cookies dialog! {e}')
-
-eh = ExtractHtml(
-			'https://www.tui.co.uk/destinations/italy/lake-garda/garda/hotels/hotel-la-perla.html')
-driver = eh.parse_html_selenium()
-df = TuiDataFields(driver)
-print(df.get_facilities())

@@ -1,79 +1,97 @@
-from bs4 import BeautifulSoup
-import datetime
-import os
-from selenium.webdriver.chrome.webdriver import WebDriver
+from datetime import datetime
+from typing import Union
+
 from tqdm import tqdm
 
-from src.html_extraction import ExtractHtml
-from src.inghams.data_fields import InghamsDataFields
-from src.tui.data_fields import TuiDataFields
-from src.save_data import SaveData
-from src.tui.data_fields import TuiDataFields
+from src.controller import InghamsController, TuiController, Controller
 
 
-def get_html_obj(url: str) -> BeautifulSoup:
-	ex_html = ExtractHtml(url)
-	return ex_html.parse_html_bs()
+class Main:
 
+	def __init__(self, inghams_filename: str, tui_filename: str):
+		self.inghams_controller = InghamsController(inghams_filename)
+		self.tui_controller = TuiController(tui_filename)
+		self.controller = Controller
+		self.__tui_items = 0
+		self.__inghams_items = 0
 
-def get_driver_obj(url: str) -> WebDriver:
-	ex_html = ExtractHtml(url)
-	return ex_html.parse_html_selenium()
+	def scrape_and_save_data(self, source_company):
+		self.__check_source_company(source_company)
 
+		if source_company == 'inghams':
+			url_list = self.__get_inghams_url_list()
+			self.__inghams_items = len(url_list)
+			for url in tqdm(url_list):
+				url_html_obj = self.__get_driver_or_html(source_company, url)
+				hotel_data = self.inghams_controller.get_inghams_data_fields(url_html_obj)
+				self.inghams_controller.save_data.add_data(hotel_data)
+		else:
+			url_list = self.__get_tui_url_list()
+			self.__tui_items = len(url_list)
+			for url in tqdm(url_list):
+				driver_obj = self.__get_driver_or_html(source_company, url)
+				hotel_data = self.tui_controller.get_tui_data_fields(driver_obj)
+				self.tui_controller.save_data.add_data(hotel_data)
+			driver_obj.close()
 
-def get_inghams_data_fields(html_obj: BeautifulSoup) -> list[str]:
-	data_fields = InghamsDataFields(html_obj)
-	data_fields_list = [
-		data_fields.get_name(),
-		data_fields.get_description(),
-		data_fields.get_rooms(),
-		data_fields.get_location(),
-		data_fields.get_facilities(),
-		data_fields.get_food_and_drink(),
-		data_fields.get_images(),
-		data_fields.get_excursions()
-	]
-	return data_fields_list
+	def read_data_and_enter_into_cms(self, source_company: str):
+		self.__check_source_company(source_company)
+		if source_company == 'inghams':
+			headers, row_generator = self.inghams_controller.read_data.read_scraped_data()
+			row = self.inghams_controller.read_data.get_scraped_data_row(row_generator)
+			while tqdm(row, total=self.__inghams_items):
+				row_dict = self.__create_row_dict(headers, row)
+				self.inghams_controller.enter_inghams_data(row_dict)
 
+		else:
+			headers, row_generator = self.tui_controller.read_data.read_scraped_data()
+			row = self.tui_controller.read_data.get_scraped_data_row(row_generator)
+			while tqdm(row, total=self.__tui_items):
+				row_dict = self.__create_row_dict(headers, row)
+				self.tui_controller.enter_tui_data(row_dict)
 
-def get_tui_data_fields(driver: WebDriver) -> list[str]:
-	data_fields = TuiDataFields(driver)
-	data_fields_list = [
-		data_fields.get_name(),
-		data_fields.get_description(),
-		data_fields.get_rooms(),
-		data_fields.get_location(),
-		data_fields.get_facilities(),
-		data_fields.get_food_and_drink(),
-		data_fields.get_images()
-	]
-	return data_fields_list
+	def navigate_to_add_page(self):
+		self.controller.navigate_to_add_page()
+
+	@staticmethod
+	def __create_row_dict(headers: str, row: list[any]) -> dict[str, Union[str, dict[str, str], list[str]]]:
+		row_dict = {header: col for header, col in headers, row}
+		return row_dict
+
+	@staticmethod
+	def __check_source_company(source_company: str):
+		if source_company not in ['inghams', 'tui']:
+			raise ValueError(f'source_company must be either "inghams" or "tui" ("{source_company}" passed')
+
+	def __get_inghams_url_list(self) -> list[str]:
+		return self.inghams_controller.get_url_list()
+
+	def __get_tui_url_list(self) -> list[str]:
+		return self.tui_controller.get_url_list()
+
+	def __get_driver_or_html(self, source_company: str, page_url: str):
+		if source_company == 'inghams':
+			return self.inghams_controller.get_html_obj(page_url)
+		else:
+			return self.tui_controller.get_driver_obj(page_url)
 
 
 if __name__ == '__main__':
-	ingham_url_list = ['https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0',
-				'https://www.inghams.co.uk/destinations/france/chamonix/hotel-la-folie-douce?accommodationNode=32317&programCode=GBINB&tourOpCode=ING&catalogue=010&obArrGateway=FRCH&departurePoint=AIRPORT-LGW&propertyCode=FRCH0126&boardBasis=BB&unitCode=A2&transportType=FLT&departureDate=13/05/2023&duration=7&adults=2&children=0&childages=#0']
-	tui_url_list = ['https://www.tui.co.uk/destinations/italy/lake-garda/garda/hotels/hotel-la-perla.html',
-					]
-	inghams_save_data = SaveData(
-		filename=f'inghams–{datetime.datetime.today().strftime("%Y-%m-%d")}',
-		company='inghams'
-	)
-	inghams_save_data.create_file()
-	for url in tqdm(ingham_url_list):
-		url_html_obj = get_html_obj(url)
-		hotel_data = get_inghams_data_fields(url_html_obj)
-		inghams_save_data.add_data(hotel_data)
+	current_date = datetime.today().strftime("%Y-%m-%d")
+	tui_filename = f'tui-{current_date}'
+	inghams_filename = f'inghams-{current_date}'
 
-	tui_save_data = SaveData(
-		filename=f'tui–{datetime.datetime.today().strftime("%Y-%m-%d")}',
-		company='tui'
-	)
-	tui_save_data.create_file()
-	for url in tqdm(tui_url_list):
-		driver_obj = get_driver_obj(url)
-		hotel_data = get_tui_data_fields(driver_obj)
-		tui_save_data.add_data(hotel_data)
-	driver_obj.close()
+	main = Main(inghams_filename=inghams_filename, tui_filename=tui_filename)
+	main.navigate_to_add_page()
+
+	# Scrape and save data for either site
+	main.scrape_and_save_data('tui')
+	main.scrape_and_save_data('inghams')
+
+	# Add data to CMS
+	main.read_data_and_enter_into_cms('tui')
+	main.read_data_and_enter_into_cms('inghams')
+
+	print('Complete! Please check site listings to ensure data is correct')
 
 
