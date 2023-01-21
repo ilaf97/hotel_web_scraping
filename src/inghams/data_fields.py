@@ -19,7 +19,7 @@ class InghamsDataFields:
 	- get_rooms()
 	- get_location()
 	- get_facilities()
-	- get_food_and_drink()
+	- get_meals()
 	- get_excursions()
 	- __get_all_tab_div_content() (Private)
 	- __format_text() (Private)
@@ -38,6 +38,10 @@ class InghamsDataFields:
 		description_html_objs = self.__html_object.find(id='descriptionAccTop')
 		p_tags = description_html_objs.find_all('p')
 		return self.__format_text(p_tags)
+
+	@staticmethod
+	def get_best_for() -> dict[str]:
+		return dict()
 
 	def get_rooms(self) -> str:
 		"""Returns rooms available at hotel"""
@@ -69,7 +73,7 @@ class InghamsDataFields:
 			facilities_list.append(item.text.strip())
 		return facilities_list
 
-	def get_food_and_drink(self) -> str:
+	def get_meals(self) -> str:
 		"""Returns meal options"""
 		return self.__get_all_tab_div_content('6')
 

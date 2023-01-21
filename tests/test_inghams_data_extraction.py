@@ -69,8 +69,8 @@ class TestInghamsDataFields(unittest.TestCase):
 			'Wi-fi and/or garage info omitted or incorrect'
 		)
 
-	def test_get_food_and_drink(self):
-		meals = self.df.get_food_and_drink()
+	def test_get_meals(self):
+		meals = self.df.get_meals()
 		self.assertIn(
 			'Breakfast here is buffet style and includes delicious homemade cakes, pastries, fruit juices',
 			meals,

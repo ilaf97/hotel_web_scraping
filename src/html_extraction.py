@@ -1,10 +1,25 @@
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 
 
 class ExtractHtml:
+	"""
+	Class to retireve page HTML representation, instantiate BeautifulSoup HTML objects, and instantiate Selenium
+	site drivers.
+
+	Params:
+	- url (str): the page url from which to retrieve site data
+
+	Attributes:
+	- url (str)
+
+	Methods:
+	- get_html_text()
+	- parse_html_bs()
+	- parse_html_selenium()
+	"""
 
 	def __init__(self, url: str):
 		self.url = url

@@ -12,12 +12,49 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 class ImageHandler:
+	"""
+	Class to handle the uploading of images into the CMS image client.
+	First, images are saved locally, then they are uploaded, then deleted from local storage to conserve runtime memory.
 
-	def __init__(self, driver: WebDriver, source_site: str):
+	Params:
+	- driver (WebDriver): the driver instance for the CMS site
+	- source_company (str): the company from which the images are taken
+
+	Attributes:
+	- source_company (str)
+	- __driver (WebDriver) (Private)
+
+	Methods:
+	- save_image()
+	- get_all_images_in_directory()
+	- upload_and_select_images()
+	- delete_images()
+	- add_title_and_alt_text()
+	"""
+
+	def __init__(self, driver: WebDriver, source_company: str):
 		self.__driver = driver
-		self.source_site = source_site
+		self.source_company = source_company
+		self.__ROOT_DIR = Path(__file__).parent.parent
+
+	def save_image(self, image_name: str, image_url: str):
+		"""Save image from URL in directory"""
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+			'From': 'isaac.frewin@gmail.com'
+		}
+		image_data = requests.get(image_url, headers=headers).content
+		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/images/{image_name}', 'wb') as img:
+			img.write(image_data)
+
+	def get_all_images_in_directory(self) -> Generator[Path, None, None]:
+		"""Return iterator object of paths to all images in given directory"""
+		abspath = os.path.abspath(f'{self.__ROOT_DIR}/data/{self.source_company}/images')
+		pathlist = Path(abspath).rglob('*.jpg')
+		return pathlist
 
 	def upload_and_select_images(self, image_paths: Generator[Path, None, None]):
+		"""Upload images to CMS client and select them for use in the accommodation listing"""
 
 		def locate_upload_pop_up(timeout: int):
 			WebDriverWait(self.__driver, timeout).until_not(
@@ -27,11 +64,13 @@ class ImageHandler:
 
 		timeouts = [1, 2, 3, 5, 10]  # total timeout of 20s
 		for counter, image in enumerate(image_paths):
-			if counter > 2:
+			if counter == 15:
+				break
+			if 2 < counter < 15:
 				# Add another image slider
 				self.__driver.find_element(
-						By.XPATH,
-						'//*[@id="gallery_set-group"]/div/fieldset/table/tbody/tr[5]/td/a'
+						By.LINK_TEXT,
+						'Add another IMAGE SLIDER'
 					).click()
 			# Open image selector in new tab
 			self.__driver.find_element(
@@ -59,18 +98,9 @@ class ImageHandler:
 			# Switch back to original window
 			self.__driver.switch_to.window(self.__driver.window_handles[0])
 
-	def get_all_images_in_directory(self) -> Generator[Path, None, None]:
-		abspath = os.path.abspath(f'../data/{self.source_site}/images')
-		pathlist = Path(abspath).rglob('*.jpg')
-		return pathlist
-
-	def save_image(self, image_name: str, image_url: str):
-		image_data = requests.get(image_url).content
-		with open(f'../data/{self.source_site}/images/{image_name}.jpg', 'wb') as img:
-			img.write(image_data)
-
 	def delete_images(self):
-		abspath = os.path.abspath(f'../data/{self.source_site}/images')
+		"""Delete all images in directory"""
+		abspath = os.path.abspath(f'{self.__ROOT_DIR}/data/{self.source_company}/images')
 		for file in os.listdir(abspath):
 			file_path = os.path.join(abspath, file)
 			try:
@@ -82,6 +112,7 @@ class ImageHandler:
 				raise OSError(f'Failed to delete {file_path}. Reason: {e}')
 
 	def add_title_and_alt_text(self, image_dict: dict[str: dict[str: str]]):
+		"""Add title and alt text for all images in accommodation listing"""
 		for counter, image_name in enumerate(image_dict.keys()):
 			self.__driver.find_element(
 				By.ID,

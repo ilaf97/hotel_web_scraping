@@ -1,15 +1,13 @@
-import csv
+import json
 from pathlib import Path
-from typing import Iterator
 
 
 class ReadData:
 	"""
-	Class for reading data from CSV format into Python variables.
+	Class for reading data from JSON or CSV format into Python variables.
 
 	Params:
-	- filename (str)
-	- source_company (str)
+	- filename (str): the : the name of the company from which the data originates
 
 	Attributes:
 	- filename (str)
@@ -18,8 +16,7 @@ class ReadData:
 
 	Methods:
 	- read_url_list()
-	- read_scraped_data()
-	- get_scraped_data_row()
+	- read_data()
 	"""
 
 	def __init__(self, filename: str, source_company: str):
@@ -32,18 +29,8 @@ class ReadData:
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/urls.csv', 'r') as f:
 			return f.readlines()
 
-	def read_scraped_data(self) -> Iterator[any]:
+	def read_data(self) -> tuple[any, list]:
 		"""Returns headers and row iterator object from web scraping results CSV"""
-		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/{self.filename}.csv', 'r') as f:
-			csvreader = csv.reader(f)
-			headers = next(csvreader)
-			return headers, csvreader
-
-	@staticmethod
-	def get_scraped_data_row(csv_generator: Iterator[any]):
-		"""Returns next row in iterator object or None if iterator is empty"""
-		try:
-			return next(csv_generator)
-		except StopIteration:
-			return None
+		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/{self.filename}.json', 'r') as f:
+			return json.load(f)
 
