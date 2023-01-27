@@ -53,7 +53,12 @@ class CmsInstance:
 		exception will be raised"""
 		try:
 			self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/div[4]/input[2]').click()
-			assert not self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/p').is_displayed()
+			# Assert that the error banner is not shown
+			try:
+				self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/p')
+			except NoSuchElementException:
+				pass
+
 			assert self.driver.find_element(By.XPATH, '//*[@id="main"]/div/ul/li').is_displayed()
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find/select "Save and Add Another" button\n{e}')

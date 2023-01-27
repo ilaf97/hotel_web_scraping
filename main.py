@@ -1,5 +1,6 @@
+import time
 from datetime import datetime
-from typing import Union
+from typing import Union, Any
 
 from tqdm import tqdm
 
@@ -37,8 +38,6 @@ class Main(CmsInstance):
 		super().__init__()
 		self.inghams_controller = InghamsController(inghams_filename, self.driver)
 		self.tui_controller = TuiController(tui_filename, self.driver)
-		self.__tui_items = 0
-		self.__inghams_items = 0
 
 	def scrape_and_save_data(self, source_company):
 		self.__check_source_company(source_company)
@@ -46,17 +45,15 @@ class Main(CmsInstance):
 		if source_company == 'inghams':
 			url_list = self.__get_inghams_url_list()
 			self.inghams_controller.create_json_file()
-			self.__inghams_items = len(url_list)
 			for url in tqdm(url_list):
-				url_html_obj = self.__get_driver_or_html(source_company, url)
+				url_html_obj = self.__get_driver_or_html(source_company, url.strip())
 				hotel_data = self.inghams_controller.get_inghams_data_fields_json(url_html_obj)
 				self.inghams_controller.save_data.add_data(hotel_data)
 		else:
 			url_list = self.__get_tui_url_list()
 			self.tui_controller.create_json_file()
-			self.__tui_items = len(url_list)
 			for url in tqdm(url_list):
-				driver_obj = self.__get_driver_or_html(source_company, url)
+				driver_obj = self.__get_driver_or_html(source_company, url.strip())
 				hotel_data = self.tui_controller.get_tui_data_fields(driver_obj)
 				self.tui_controller.save_data.add_data(hotel_data)
 			driver_obj.close()
@@ -65,16 +62,20 @@ class Main(CmsInstance):
 		self.__check_source_company(source_company)
 		if source_company == 'inghams':
 			hotels_json = self.inghams_controller.read_data.read_data()
-			hotel_dict = hotels_json.pop(0)
-			while tqdm(hotel_dict, total=self.__inghams_items):
+			num_inghams_items = len(hotels_json)
+			while tqdm(len(hotels_json), total=num_inghams_items):
+				hotel_dict = hotels_json.pop(0)
 				self.inghams_controller.enter_inghams_data(hotel_dict)
+				time.sleep(1)
 				self.save_listing()
 
 		else:
 			hotels_json = self.tui_controller.read_data.read_data()
-			hotel_dict = hotels_json.pop(0)
-			while tqdm(hotel_dict, total=self.__tui_items):
+			num_tui_items = len(hotels_json)
+			while tqdm(len(hotels_json), total=num_tui_items):
+				hotel_dict = hotels_json.pop(0)
 				self.tui_controller.enter_tui_data(hotel_dict)
+				time.sleep(1)
 				self.save_listing()
 
 	@staticmethod
@@ -104,13 +105,13 @@ if __name__ == '__main__':
 	main = Main(inghams_filename=inghams_filename, tui_filename=tui_filename)
 
 	# Scrape and save data for either site
-	main.scrape_and_save_data('tui')
-	# main.scrape_and_save_data('inghams')
+	# main.scrape_and_save_data('tui')
+	main.scrape_and_save_data('inghams')
 
 	# Add data to CMS
-	main.instantiate_cms_add_page()
-	main.read_data_and_enter_into_cms('tui')
-	# main.read_data_and_enter_into_cms('inghams')
+	# main.instantiate_cms_add_page()
+	# main.read_data_and_enter_into_cms('tui')
+	main.read_data_and_enter_into_cms('inghams')
 
 	print('Complete! Please check site listings to ensure data is correct')
 

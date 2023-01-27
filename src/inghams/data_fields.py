@@ -60,7 +60,10 @@ class InghamsDataFields:
 		li_tags = location_tab_objs.find_all('li')
 		latitude = float(li_tags[1].text.split(': ')[1])
 		longitude = float(li_tags[0].text.split(': ')[1])
-		location_dict['description'] = li_tags[2].text.strip()
+		try:
+			location_dict['description'] = li_tags[2].text.strip()
+		except IndexError:
+			location_dict['description'] = ''
 		location_dict['lat_long'] = [latitude, longitude]
 		return location_dict
 
@@ -70,7 +73,7 @@ class InghamsDataFields:
 		facilities_tab_objs = self.__html_object.find(id='tabpanel3')
 		ul_tags = facilities_tab_objs.find_all('ul')
 		for item in ul_tags:
-			facilities_list.append(item.text.strip())
+			facilities_list = facilities_list + (item.text.strip().split('\n'))
 		return facilities_list
 
 	def get_meals(self) -> str:
@@ -85,12 +88,17 @@ class InghamsDataFields:
 		"""Returns all images URLS for hotel"""
 		image_objs = self.__html_object.find_all('div', class_='c-slider__list')[0]
 		img_tags = image_objs.find_all('img')
-		img_name = image_objs.find_all('div', class_='c-slider__caption')
+		img_name = image_objs.find_all('div', class_='c-slider__item')
 		image_data = {}
 		for index, image in enumerate(img_tags):
-			image_data[img_name[index].text] = {
+			if index > 15:
+				break
+			else:
+				if img_name[index].text is None:
+					continue
+				image_data[img_name[index].text.replace('\n', '')] = {
 				'src': image['data-cloudinarymainslider'],
-				'alt': image['alt']
+				'alt': image['alt'].capitalize()
 			}
 		return image_data
 
@@ -101,9 +109,12 @@ class InghamsDataFields:
 
 		Returns:
 		Formatted string of div element's text representation"""
-		tab_objs = self.__html_object.find(id='tabpanel' + panel_no)
-		div = tab_objs.find_all('div', class_='c-accordion__content')
-		return self.__format_text(div)
+		try:
+			tab_objs = self.__html_object.find(id='tabpanel' + panel_no)
+			div = tab_objs.find_all('div', class_='c-accordion__content')
+			return self.__format_text(div)
+		except AttributeError:
+			return ''
 
 	@staticmethod
 	def __format_text(html_objs: ResultSet) -> str:

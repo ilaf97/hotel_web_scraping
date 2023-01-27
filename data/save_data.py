@@ -26,12 +26,12 @@ class SaveData:
 		self.__ROOT_DIR = Path(__file__).parent.parent
 
 	def create_json_file(self):
-		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/{self.filename}.json', 'w') as f:
+		with open(f'{self.__ROOT_DIR}/data/json_data/{self.source_company}/{self.filename}.json', 'w') as f:
 			json.dump([], f)
 
 	def add_data(self, hotel_data: dict[any]):
 		"""Add data to the CSV file associated with the class attribute data"""
-		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/{self.filename}.json', 'r+') as f:
+		with open(f'{self.__ROOT_DIR}/data/json_data/{self.source_company}/{self.filename}.json', 'r+') as f:
 			data_list = json.load(f)
 			data_list.append(hotel_data)
 			f.seek(0)

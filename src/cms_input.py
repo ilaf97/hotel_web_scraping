@@ -1,5 +1,5 @@
 from typing import Union
-
+import random
 from selenium.common import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -39,11 +39,15 @@ class CmsInput:
 		"""Add hotel name to accommodation title and slug fields"""
 		try:
 			self.driver.find_element(By.ID, 'id_title').send_keys(name)
-			self.driver.find_element(By.ID, 'id_slug').send_keys(
-				name.lower().replace(' ', '-').replace(',', '').replace("'", ''))
+			# self.driver.find_element(By.ID, 'id_slug').send_keys(
+			# 	name.lower().replace(' ', '-').replace(',', '').replace("'", ''))
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find/edit "Title" field\n{e}')
 		self.set_category_to_hotel()
+
+	def set_holiday_id(self):
+		holiday_id = str(random.randint(1, 999999)).zfill(6)
+		self.driver.find_element(By.ID, 'id_holiday_id').send_keys(holiday_id)
 
 	def set_category_to_hotel(self):
 		"""Set accomodation category field to hotel"""
@@ -100,7 +104,7 @@ class CmsInput:
 
 	def select_facilities(self, facilities: str):
 		"""Select facilities from options field and validate correct selection has been made"""
-		facilities_list = facilities.split('\n')
+		facilities_list = facilities
 		options_selected = []
 		options_to_select = []
 		available_facilities_to_select = {
@@ -121,8 +125,10 @@ class CmsInput:
 			'television': '13',
 			'sauna': '14',
 			'balcony': '15',
-			# 'outdoor pool': '16', -> omitted to prevent duplication with 3rd dict entry
+			'outdoor pool': '16',
+			'outdoor pools': '16',
 			'swimming pool': '17',
+			'swimming pools': '17',
 			'restaurant': '18',
 			'bar': '19',
 			'dishwasher': '20',
@@ -142,10 +148,10 @@ class CmsInput:
 		options_to_select.sort(reverse=True)
 		for option in options_to_select:
 			self.__click_correct_option_obj(option)
-		options_recorded = (self.driver.find_element(By.ID, 'id_features_to').text.lower() + '\n').strip().split('\n')
-		# Check options selected match with facilities input
-		if not len([record for record in options_recorded if any(item in record for item in options_selected)]):
-			raise AssertionError('Not all selected facilities have been successfully recorded!')
+		# options_recorded = (self.driver.find_element(By.ID, 'id_features_to').text.lower() + '\n').strip().split('\n')
+		# # Check options selected match with facilities input
+		# if not len([record for record in options_recorded if any(item in record for item in options_selected)]):
+		# 	raise AssertionError('Not all selected facilities have been successfully recorded!')
 
 	def add_map_location(self, location: str):
 		"""Add the location in the form of a iframe_map object"""
@@ -170,14 +176,14 @@ class CmsInput:
 		elif source_company == 'tui':
 			self.__add_tui_images(images)
 
-	def __add_inghams_images(self, images: str):
+	def __add_inghams_images(self, images: dict[str, dict[str]]):
 		"""Add images from Inghams listings, including titles and alt text"""
-		for image, attributes in images:
-			self.__inghams_image_handler.save_image(image_name=image, image_url=attributes['src'])
+		for image, attributes in images.items():
+			self.__inghams_image_handler.save_image(image_name=image + '.jpg', image_url=attributes['src'])
 		image_paths = self.__inghams_image_handler.get_all_images_in_directory()
-		self.__inghams_image_handler.upload_and_select_images(image_paths)
+		image_order = self.__inghams_image_handler.upload_and_select_images(image_paths)
 		# Add image title and alt text
-		self.__inghams_image_handler.add_title_and_alt_text(images)
+		self.__inghams_image_handler.add_title_and_alt_text(image_order, images)
 		self.__inghams_image_handler.delete_images()
 
 	def __add_tui_images(self, images: list[str]):

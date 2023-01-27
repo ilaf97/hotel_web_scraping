@@ -44,6 +44,7 @@ class ImageHandler:
 			'From': 'isaac.frewin@gmail.com'
 		}
 		image_data = requests.get(image_url, headers=headers).content
+		image_name = image_name
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/images/{image_name}', 'wb') as img:
 			img.write(image_data)
 
@@ -53,7 +54,7 @@ class ImageHandler:
 		pathlist = Path(abspath).rglob('*.jpg')
 		return pathlist
 
-	def upload_and_select_images(self, image_paths: Generator[Path, None, None]):
+	def upload_and_select_images(self, image_paths: Generator[Path, None, None]) -> list[str]:
 		"""Upload images to CMS client and select them for use in the accommodation listing"""
 
 		def locate_upload_pop_up(timeout: int):
@@ -63,6 +64,7 @@ class ImageHandler:
 				))
 
 		timeouts = [1, 2, 3, 5, 10]  # total timeout of 20s
+		images_names_order = []
 		for counter, image in enumerate(image_paths):
 			if counter == 15:
 				break
@@ -94,9 +96,12 @@ class ImageHandler:
 						raise TimeoutException(f'Image could not be uploaded within 20 seconds.')
 
 			# Click on required uploaded image
-			self.__driver.find_element(By.LINK_TEXT, str(image).split('/')[-1]).click()
+			image_name = str(image).split('/')[-1]
+			self.__driver.find_element(By.LINK_TEXT, image_name).click()
+			images_names_order.append(image_name.replace('.jpg', ''))
 			# Switch back to original window
 			self.__driver.switch_to.window(self.__driver.window_handles[0])
+		return images_names_order
 
 	def delete_images(self):
 		"""Delete all images in directory"""
@@ -111,9 +116,9 @@ class ImageHandler:
 			except Exception as e:
 				raise OSError(f'Failed to delete {file_path}. Reason: {e}')
 
-	def add_title_and_alt_text(self, image_dict: dict[str: dict[str: str]]):
+	def add_title_and_alt_text(self, image_order: list[str], image_dict: dict[str: dict[str: str]]):
 		"""Add title and alt text for all images in accommodation listing"""
-		for counter, image_name in enumerate(image_dict.keys()):
+		for counter, image_name in enumerate(image_order):
 			self.__driver.find_element(
 				By.ID,
 				f'id_gallery_set-{counter}-title'

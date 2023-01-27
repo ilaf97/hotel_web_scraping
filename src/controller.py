@@ -42,6 +42,7 @@ class Controller:
 
 	def _enter_data_into_cms(self, source: str, hotel_attributes: dict[str, any]):
 		self.cms_input.add_hotel_name(hotel_attributes['hotel_name'])
+		self.cms_input.set_holiday_id()
 		self.cms_input.add_text_description_field(hotel_attributes['description'], 'description')
 		self.cms_input.add_text_description_field(hotel_attributes['rooms'], 'rooms')
 		self.cms_input.add_text_description_field(hotel_attributes['meals'], 'meals')
