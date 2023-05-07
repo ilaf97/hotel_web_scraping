@@ -6,11 +6,11 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from tqdm import tqdm
 
 from src.controller.controller import InghamsController, TuiController
-from src.seleniuim.cms_instance import CmsInstance
-from src.seleniuim.cms_operations import CmsOperations
+from src.cms.cms_instance import CmsInstance
+from src.cms.cms_operations import CmsOperations
 
 
-class Main:
+class Run:
 	"""
 	Main class of the web scraping application. This is the user endpoint from which to run the application.
 
@@ -36,8 +36,15 @@ class Main:
 	- __get_driver_or_html() (Private)
 	"""
 
-	def __init__(self, web_driver: WebDriver, inghams_filename: str, tui_filename: str, crystal_filename: str):
+	def __init__(
+			self,
+			web_driver: WebDriver,
+			cms_operations: CmsOperations,
+			inghams_filename: str,
+			tui_filename: str,
+			crystal_filename: str):
 		self.driver = web_driver
+		self.cms_operations = cms_operations
 		self.inghams_controller = InghamsController(inghams_filename, self.driver)
 		self.tui_controller = TuiController(tui_filename, self.driver, 'tui')
 		self.crystal_controller = TuiController(crystal_filename, self.driver, 'crystal_ski')
@@ -117,13 +124,13 @@ class Main:
 			try:
 				company_controller.enter_data(hotel_dict)
 				time.sleep(1)
-				self.save_listing()
+				self.cms_operations.save_listing()
 			except Exception as e:
 				hotel_dict['failed_reason'] = e.__str__()
 				self.__record_failed_run(
 					company_controller=company_controller,
 					hotel_dict=hotel_dict)
-				self.save_listing(failed_run=True)
+				self.cms_operations.save_listing(failed_run=True)
 				# If any exception occurs, want to return new hotel json
 			num_items -= 1
 
@@ -162,7 +169,7 @@ if __name__ == '__main__':
 	cms_operations = CmsOperations(cms_instance)
 	web_driver = cms_instance.driver
 
-	main = Main(inghams_filename=inghams_filename, tui_filename=tui_filename, crystal_filename='crystal_ski-2023-05-03 (1)')
+	main = Run(inghams_filename=inghams_filename, tui_filename=tui_filename, crystal_filename='crystal_ski-2023-05-03 (1)')
 
 	# Scrape and save data for either site
 	# main.scrape_and_save_data('crystal_ski')

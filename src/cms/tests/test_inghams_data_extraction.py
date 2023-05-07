@@ -1,5 +1,5 @@
 import unittest
-from src.seleniuim.html_extraction import ExtractHtml
+from src.cms.html_extraction import WebDriverFactory
 from src.inghams.data_fields import InghamsDataFields
 
 
@@ -7,7 +7,7 @@ class TestInghamsDataFields(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls) -> None:
-		eh = ExtractHtml(
+		eh = WebDriverFactory(
 			'https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
 		html_obj = eh.parse_html_bs()
 		cls.df = InghamsDataFields(html_obj)

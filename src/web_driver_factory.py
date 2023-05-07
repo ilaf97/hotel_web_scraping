@@ -4,7 +4,7 @@ from selenium import webdriver
 from requests import HTTPError, ConnectionError
 
 
-class ExtractHtml:
+class WebDriverFactory:
 	"""
 	Class to retireve page HTML representation, instantiate BeautifulSoup HTML objects, and instantiate Selenium
 	site drivers.

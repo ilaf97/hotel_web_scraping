@@ -4,12 +4,12 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from src.controller.abstract_controller import AbstractCompanyController
-from src.seleniuim.html_extraction import ExtractHtml
+from src.web_driver_factory import WebDriverFactory
 from src.inghams.data_fields import InghamsDataFields
-from data.save_data import SaveWebScrapingData
-from data.read_data import ReadData
+from src.web_scraping.save_data import SaveWebScrapingData
+from src.web_scraping.read_data import ReadData
 from src.tui.data_fields import TuiDataFields
-from src.seleniuim.cms_listing_mapper import CmsListingMapper
+from src.cms.cms_listing_mapper import CmsListingMapper
 
 
 class BaseController:
@@ -25,8 +25,17 @@ class BaseController:
 	- _enter_data_into_cms() (Protected)
 	"""
 
-	def __init__(self, cms_driver: WebDriver):
-		self.cms_listing_mapper = CmsListingMapper(cms_driver)
+	def __init__(
+			self,
+			web_driver: WebDriver,
+			filename: str,
+			company_name: str
+	):
+		self.cms_listing_mapper = CmsListingMapper(web_driver)
+		self.filename = filename
+		self.company_name = company_name
+		self.save_data = SaveWebScrapingData(self.filename, company_name)
+		self.read_data = ReadData(self.filename, company_name)
 
 	@staticmethod
 	def _create_data_fields_dict(data_fields: Union[InghamsDataFields, TuiDataFields]) -> dict[any]:
@@ -54,32 +63,6 @@ class BaseController:
 		self.cms_listing_mapper.add_map_location(hotel_attributes['location'])
 		self.cms_listing_mapper.add_images(source_company=source, images=hotel_attributes['images'])
 
-
-class InghamsController(BaseController, AbstractCompanyController):
-	"""
-	Class to handle Ingham's data flows within the application.
-
-	Params:
-	- filename (str): name of file to save/read
-
-	Attributes:
-	- save_data (SaveData)
-	- read_data (ReadData)
-	- __filename (str) (Private)
-
-	Methods:
-	- read_scraped_data()
-	- get_url_list()
-	- get_inghams_data_fields()
-	- enter_inghams_data()
-	"""
-
-	def __init__(self, filename: str, cms_driver: WebDriver):
-		BaseController.__init__(self, cms_driver)
-		self.__filename = filename
-		self.save_data = SaveWebScrapingData(self.__filename, 'inghams')
-		self.read_data = ReadData(self.__filename, 'inghams')
-
 	def create_json_file(self):
 		"""Create file into which scraped data can be saved"""
 		self.save_data.create_json_file()
@@ -92,75 +75,10 @@ class InghamsController(BaseController, AbstractCompanyController):
 		"""Returns all URLs of listings to scrape"""
 		return self.read_data.read_url_list()
 
-	@staticmethod
-	def get_driver_obj(page_url: str) -> BeautifulSoup:
-		"""Returns a newly instantiated BeautifulSoup HTML object"""
-		ex_html = ExtractHtml(page_url)
-		return ex_html.parse_html_bs()
-
-	def get_data_fields_json(self, html_obj: BeautifulSoup) -> dict[any]:
-		"""Returns raw data scraped from a given Ingham's listing"""
-		data_fields = InghamsDataFields(html_obj)
-		data_fields_dict = self._create_data_fields_dict(data_fields)
-		data_fields_dict['excursions'] = data_fields.get_excursions()
-		return data_fields_dict
-
 	def enter_data(self, hotel_attributes: dict[str, any]):
 		"""Enter and save accommodation data into the CMS"""
-		self._enter_data_into_cms('inghams', hotel_attributes)
+		self._enter_data_into_cms(self.company_name, hotel_attributes)
 
 
-class TuiController(BaseController, AbstractCompanyController):
-	"""
-	Class to handle TUI's data flows within the application.
 
-	Params:
-	- filename (str): name of file to save/read
-
-	Attributes:
-	- save_data (SaveData)
-	- read_data (ReadData)
-	- __filename (str) (Private)
-
-	Methods:
-	- read_scraped_data()
-	- get_url_list()
-	- get_inghams_data_fields()
-	- enter_inghams_data()
-	"""
-
-	def __init__(self, filename: str, cms_driver: WebDriver, tui_site: str):
-		BaseController.__init__(self, cms_driver)
-		self.__filename = filename
-		self.tui_site = tui_site
-		self.save_data = SaveWebScrapingData(self.__filename, tui_site)
-		self.read_data = ReadData(self.__filename, tui_site)
-
-	def create_json_file(self):
-		"""Create file into which scraped data can be saved"""
-		self.save_data.create_json_file()
-
-	def read_scraped_data(self) -> list[str] and Iterator[any]:
-		"""Returns column headers and a row iterator object"""
-		return self.read_data.read_data()
-
-	def get_url_list(self) -> list[str]:
-		"""Returns all URLs of listings to scrape"""
-		return self.read_data.read_url_list()
-
-	@staticmethod
-	def get_driver_obj(page_url: str) -> WebDriver:
-		"""Returns a newly instantiated Selenium WebDriver object"""
-		ex_html = ExtractHtml(page_url)
-		return ex_html.parse_html_selenium()
-
-	def get_data_fields_json(self, driver: WebDriver) -> dict[any]:
-		"""Returns raw data scraped from a given TUI listing"""
-		data_fields = TuiDataFields(driver)
-		time.sleep(1)
-		return self._create_data_fields_dict(data_fields)
-
-	def enter_data(self, hotel_attributes: dict[str, any]):
-		"""Enter and save accommodation data into the CMS"""
-		self._enter_data_into_cms(self.tui_site, hotel_attributes)
 

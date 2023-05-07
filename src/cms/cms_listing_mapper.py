@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from src.image_handler import ImageHandler
-from src.seleniuim.cms_instance import CmsInstance
+from src.cms.cms_instance import CmsInstance
 
 
 class CmsListingMapper:

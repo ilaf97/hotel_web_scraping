@@ -6,7 +6,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common import NoSuchElementException
-from src.seleniuim.html_extraction import ExtractHtml
+from src.cms.html_extraction import WebDriverFactory
 
 
 class CmsInstance:
@@ -32,7 +32,7 @@ class CmsInstance:
 
 	def __instantiate_site_driver(self) -> WebDriver:
 		"""Returns the Seleium site driver for the CMS"""
-		extract_html = ExtractHtml(self.__admin_url)
+		extract_html = WebDriverFactory(self.__admin_url)
 		driver = extract_html.parse_html_selenium()
 		return driver
 

@@ -1,6 +1,6 @@
 import unittest
 
-from src.seleniuim.html_extraction import ExtractHtml
+from src.cms.html_extraction import WebDriverFactory
 from src.tui.data_fields import TuiDataFields
 
 
@@ -8,7 +8,7 @@ class TestTuiDataFields(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls) -> None:
-		eh = ExtractHtml(
+		eh = WebDriverFactory(
 			'https://www.tui.co.uk/destinations/italy/lake-garda/garda/hotels/hotel-la-perla.html')
 		driver = eh.parse_html_selenium()
 		cls.df = TuiDataFields(driver)
