@@ -1,10 +1,6 @@
-import time
 from typing import Iterator, Union
-from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from src.controller.abstract_controller import AbstractCompanyController
-from src.web_driver_factory import WebDriverFactory
 from src.inghams.data_fields import InghamsDataFields
 from src.web_scraping.save_data import SaveWebScrapingData
 from src.web_scraping.read_data import ReadData

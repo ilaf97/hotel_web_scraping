@@ -3,15 +3,13 @@ from collections import Iterator
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from src.controller.abstract_controller import AbstractCompanyController
 from src.controller.controller import BaseController
 from src.inghams.data_fields import InghamsDataFields
 from src.web_driver_factory import WebDriverFactory
-from src.web_scraping.read_data import ReadData
-from src.web_scraping.save_data import SaveWebScrapingData
 
 
-class InghamsController(BaseController, AbstractCompanyController):
+
+class InghamsController(BaseController):
 	"""
 	Class to handle Ingham's data flows within the application.
 

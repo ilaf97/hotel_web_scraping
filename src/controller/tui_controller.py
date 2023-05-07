@@ -1,10 +1,8 @@
 from collections import Iterator
 import time
 
-from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from src.controller.abstract_controller import AbstractCompanyController
 from src.controller.controller import BaseController
 from src.tui.data_fields import TuiDataFields
 from src.web_driver_factory import WebDriverFactory
@@ -12,7 +10,7 @@ from src.web_scraping.read_data import ReadData
 from src.web_scraping.save_data import SaveWebScrapingData
 
 
-class TuiController(BaseController, AbstractCompanyController):
+class TuiController(BaseController):
 	"""
 	Class to handle TUI's data flows within the application.
 
@@ -32,9 +30,13 @@ class TuiController(BaseController, AbstractCompanyController):
 	"""
 
 	def __init__(self, filename: str, web_driver: WebDriver, tui_site: str):
-		BaseController.__init__(self, web_driver)
+		BaseController.__init__(
+			self,
+			web_driver=web_driver,
+			filename=filename,
+			company_name=tui_site
+		)
 		self.__filename = filename
-		self.tui_site = tui_site
 		self.save_data = SaveWebScrapingData(self.__filename, tui_site)
 		self.read_data = ReadData(self.__filename, tui_site)
 
