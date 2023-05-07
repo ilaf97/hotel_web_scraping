@@ -1,5 +1,5 @@
 import unittest
-from src.html_extraction import ExtractHtml
+from src.seleniuim.html_extraction import ExtractHtml
 from src.inghams.data_fields import InghamsDataFields
 
 

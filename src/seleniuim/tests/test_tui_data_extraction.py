@@ -1,7 +1,6 @@
 import unittest
-import time
 
-from src.html_extraction import ExtractHtml
+from src.seleniuim.html_extraction import ExtractHtml
 from src.tui.data_fields import TuiDataFields
 
 

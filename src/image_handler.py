@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Generator
 
 import requests
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -44,9 +44,9 @@ class ImageHandler:
 			'From': 'isaac.frewin@gmail.com'
 		}
 		image_data = requests.get(image_url, headers=headers).content
-		image_name = image_name
-		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/images/{image_name}', 'wb') as img:
-			img.write(image_data)
+		if image_name != '.jpg':
+			with open(f'{self.__ROOT_DIR}/data/{self.source_company}/images/{image_name}', 'wb') as img:
+				img.write(image_data)
 
 	def get_all_images_in_directory(self) -> Generator[Path, None, None]:
 		"""Return iterator object of paths to all images in given directory"""
@@ -65,42 +65,49 @@ class ImageHandler:
 
 		timeouts = [1, 2, 3, 5, 10]  # total timeout of 20s
 		images_names_order = []
-		for counter, image in enumerate(image_paths):
-			if counter == 15:
-				break
-			if 2 < counter < 15:
-				# Add another image slider
-				self.__driver.find_element(
-						By.LINK_TEXT,
-						'Add another IMAGE SLIDER'
-					).click()
-			# Open image selector in new tab
-			self.__driver.find_element(
-				By.ID,
-				f'id_gallery_set-{counter}-gallery_image_video_lookup'
-			).click()
-			# Switch to open window
-			self.__driver.switch_to.window(self.__driver.window_handles[1])
-			# Now will be in new image selector tab
-			self.__driver.find_element(By.XPATH, '//*[@id="result_list"]/tbody/tr[1]/td[3]/div/a').click()
-			# Upload image with increasing timeout wait times
-			self.__driver.find_element(By.CSS_SELECTOR, 'input[type=file]').send_keys(str(image))
-			for index, time in enumerate(timeouts):
-				try:
-					locate_upload_pop_up(time)
-					break
-				except TimeoutException:
-					if index != len(timeouts) - 1:
-						continue
-					else:
-						raise TimeoutException(f'Image could not be uploaded within 20 seconds.')
 
-			# Click on required uploaded image
-			image_name = str(image).split('/')[-1]
-			self.__driver.find_element(By.LINK_TEXT, image_name).click()
-			images_names_order.append(image_name.replace('.jpg', ''))
+		try:
+			for counter, image in enumerate(image_paths):
+				if counter == 15:
+					break
+				if 2 < counter < 15:
+					# Add another image slider
+					self.__driver.find_element(
+							By.LINK_TEXT,
+							'Add another IMAGE SLIDER'
+						).click()
+				# Open image selector in new tab
+				self.__driver.find_element(
+					By.ID,
+					f'id_gallery_set-{counter}-gallery_image_video_lookup'
+				).click()
+				# Switch to open window
+				self.__driver.switch_to.window(self.__driver.window_handles[1])
+				# Now will be in new image selector tab
+				self.__driver.find_element(By.XPATH, '//*[@id="result_list"]/tbody/tr[1]/td[3]/div/a').click()
+				# Upload image with increasing timeout wait times
+				self.__driver.find_element(By.CSS_SELECTOR, 'input[type=file]').send_keys(str(image))
+				for index, time in enumerate(timeouts):
+					try:
+						locate_upload_pop_up(time)
+						break
+					except TimeoutException:
+						if index != len(timeouts) - 1:
+							continue
+						else:
+							raise TimeoutException(f'Image could not be uploaded within 20 seconds.')
+
+				# Click on required uploaded image
+				image_name = str(image).split('/')[-1]
+				self.__driver.find_element(By.LINK_TEXT, image_name).click()
+				images_names_order.append(image_name.replace('.jpg', ''))
+				# Switch back to original window
+				self.__driver.switch_to.window(self.__driver.window_handles[0])
+
+		except NoSuchElementException:
 			# Switch back to original window
 			self.__driver.switch_to.window(self.__driver.window_handles[0])
+
 		return images_names_order
 
 	def delete_images(self):

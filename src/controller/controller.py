@@ -1,16 +1,18 @@
+import time
 from typing import Iterator, Union
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from src.html_extraction import ExtractHtml
+from src.controller.abstract_controller import AbstractCompanyController
+from src.seleniuim.html_extraction import ExtractHtml
 from src.inghams.data_fields import InghamsDataFields
-from data.save_data import SaveData
+from data.save_data import SaveWebScrapingData
 from data.read_data import ReadData
 from src.tui.data_fields import TuiDataFields
-from src.cms_input import CmsInput
+from src.seleniuim.cms_listing_mapper import CmsListingMapper
 
 
-class Controller:
+class BaseController:
 	"""
 	Class to handle data flows within the application.
 
@@ -24,7 +26,7 @@ class Controller:
 	"""
 
 	def __init__(self, cms_driver: WebDriver):
-		self.cms_input = CmsInput(cms_driver)
+		self.cms_input_mapper = CmsListingMapper(cms_driver)
 
 	@staticmethod
 	def _create_data_fields_dict(data_fields: Union[InghamsDataFields, TuiDataFields]) -> dict[any]:
@@ -41,18 +43,19 @@ class Controller:
 		return data_fields_dict
 
 	def _enter_data_into_cms(self, source: str, hotel_attributes: dict[str, any]):
-		self.cms_input.add_hotel_name(hotel_attributes['hotel_name'])
-		self.cms_input.set_holiday_id()
-		self.cms_input.add_text_description_field(hotel_attributes['description'], 'description')
-		self.cms_input.add_text_description_field(hotel_attributes['rooms'], 'rooms')
-		self.cms_input.add_text_description_field(hotel_attributes['meals'], 'meals')
-		self.cms_input.add_best_for(hotel_attributes['best_for'])
-		self.cms_input.select_facilities(hotel_attributes['facilities'])
-		self.cms_input.add_map_location(hotel_attributes['location'])
-		self.cms_input.add_images(source_company=source, images=hotel_attributes['images'])
+		self.cms_input_mapper.add_hotel_name(hotel_attributes['hotel_name'])
+		self.cms_input_mapper.set_holiday_id()
+		self.cms_input_mapper.set_resort(hotel_attributes.get('resort'))
+		self.cms_input_mapper.add_text_description_field(hotel_attributes['description'], 'description')
+		self.cms_input_mapper.add_text_description_field(hotel_attributes['rooms'], 'rooms')
+		self.cms_input_mapper.add_text_description_field(hotel_attributes['meals'], 'meals')
+		self.cms_input_mapper.add_best_for(hotel_attributes['best_for'])
+		self.cms_input_mapper.select_facilities(hotel_attributes['facilities'])
+		self.cms_input_mapper.add_map_location(hotel_attributes['location'])
+		self.cms_input_mapper.add_images(source_company=source, images=hotel_attributes['images'])
 
 
-class InghamsController(Controller):
+class InghamsController(BaseController, AbstractCompanyController):
 	"""
 	Class to handle Ingham's data flows within the application.
 
@@ -72,9 +75,9 @@ class InghamsController(Controller):
 	"""
 
 	def __init__(self, filename: str, cms_driver: WebDriver):
-		super().__init__(cms_driver)
+		BaseController.__init__(self, cms_driver)
 		self.__filename = filename
-		self.save_data = SaveData(self.__filename, 'inghams')
+		self.save_data = SaveWebScrapingData(self.__filename, 'inghams')
 		self.read_data = ReadData(self.__filename, 'inghams')
 
 	def create_json_file(self):
@@ -90,26 +93,26 @@ class InghamsController(Controller):
 		return self.read_data.read_url_list()
 
 	@staticmethod
-	def get_html_obj(page_url: str) -> BeautifulSoup:
+	def get_driver_obj(page_url: str) -> BeautifulSoup:
 		"""Returns a newly instantiated BeautifulSoup HTML object"""
 		ex_html = ExtractHtml(page_url)
 		return ex_html.parse_html_bs()
 
-	def get_inghams_data_fields_json(self, html_obj: BeautifulSoup) -> dict[any]:
+	def get_data_fields_json(self, html_obj: BeautifulSoup) -> dict[any]:
 		"""Returns raw data scraped from a given Ingham's listing"""
 		data_fields = InghamsDataFields(html_obj)
 		data_fields_dict = self._create_data_fields_dict(data_fields)
 		data_fields_dict['excursions'] = data_fields.get_excursions()
 		return data_fields_dict
 
-	def enter_inghams_data(self, hotel_attributes: dict[str, any]):
+	def enter_data(self, hotel_attributes: dict[str, any]):
 		"""Enter and save accommodation data into the CMS"""
 		self._enter_data_into_cms('inghams', hotel_attributes)
 
 
-class TuiController(Controller):
+class TuiController(BaseController, AbstractCompanyController):
 	"""
-	Class to handle Ingham's data flows within the application.
+	Class to handle TUI's data flows within the application.
 
 	Params:
 	- filename (str): name of file to save/read
@@ -126,11 +129,12 @@ class TuiController(Controller):
 	- enter_inghams_data()
 	"""
 
-	def __init__(self, filename: str, cms_driver: WebDriver):
-		super().__init__(cms_driver)
+	def __init__(self, filename: str, cms_driver: WebDriver, tui_site: str):
+		BaseController.__init__(self, cms_driver)
 		self.__filename = filename
-		self.save_data = SaveData(self.__filename, 'tui')
-		self.read_data = ReadData(self.__filename, 'tui')
+		self.tui_site = tui_site
+		self.save_data = SaveWebScrapingData(self.__filename, tui_site)
+		self.read_data = ReadData(self.__filename, tui_site)
 
 	def create_json_file(self):
 		"""Create file into which scraped data can be saved"""
@@ -150,16 +154,13 @@ class TuiController(Controller):
 		ex_html = ExtractHtml(page_url)
 		return ex_html.parse_html_selenium()
 
-	def get_tui_data_fields(self, driver: WebDriver) -> dict[any]:
+	def get_data_fields_json(self, driver: WebDriver) -> dict[any]:
 		"""Returns raw data scraped from a given TUI listing"""
 		data_fields = TuiDataFields(driver)
+		time.sleep(1)
 		return self._create_data_fields_dict(data_fields)
 
-	def enter_tui_data(self, hotel_attributes: dict[str, any]):
+	def enter_data(self, hotel_attributes: dict[str, any]):
 		"""Enter and save accommodation data into the CMS"""
-		self._enter_data_into_cms('tui', hotel_attributes)
-
-
-
-
+		self._enter_data_into_cms(self.tui_site, hotel_attributes)
 

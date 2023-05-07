@@ -96,7 +96,7 @@ class InghamsDataFields:
 			else:
 				if img_name[index].text is None:
 					continue
-				image_data[img_name[index].text.replace('\n', '')] = {
+				image_data[img_name[index].text.replace('\n', '').strip().lstrip()] = {
 				'src': image['data-cloudinarymainslider'],
 				'alt': image['alt'].capitalize()
 			}

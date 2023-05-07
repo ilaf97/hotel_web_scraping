@@ -4,7 +4,7 @@ January 2023
 
 *** INTRO ***
 
-This web scraper is designed to extract data for accomodation listings from Ingham's and TUI's websites.
+This web scraper is designed to extract data for accommodation listings from Ingham's and TUI's websites.
 An example listing for Ingham's and TUI respectively can be found here:
     • https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0
     • https://www.tui.co.uk/destinations/italy/lake-garda/garda/hotels/hotel-la-perla.html
@@ -20,6 +20,9 @@ The web scraper will extract the following data:
 • Meals
 • Excursions (Ingham's hotels only)
 • Images
+
+To run the program:
+    1. In main.py, go to 153
 
 
 *** CONSIDERATIONS ***

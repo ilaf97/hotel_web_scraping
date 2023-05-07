@@ -1,14 +1,15 @@
-from typing import Union
+import logging
+from typing import Union, Optional
 import random
 from selenium.common import NoSuchElementException
-from selenium.webdriver import ActionChains
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from src.image_handler import ImageHandler
 
 
-class CmsInput:
+class CmsListingMapper():
 	"""
 	Class handling input into CMS data fields.
 
@@ -32,6 +33,8 @@ class CmsInput:
 		self.driver = cms_driver
 		self.__inghams_image_handler = \
 			ImageHandler(driver=self.driver, source_company='inghams')
+		self.__crystal_ski_image_handler = \
+			ImageHandler(driver=self.driver, source_company='crystal_ski')
 		self.__tui_image_handler = \
 			ImageHandler(driver=self.driver, source_company='tui')
 
@@ -48,6 +51,14 @@ class CmsInput:
 	def set_holiday_id(self):
 		holiday_id = str(random.randint(1, 999999)).zfill(6)
 		self.driver.find_element(By.ID, 'id_holiday_id').send_keys(holiday_id)
+
+	def set_resort(self, resort_name: Optional[str]):
+		if resort_name:
+			"""Set resort name field"""
+			try:
+				self.driver.find_element(By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]').click()
+			except NoSuchElementException as e:
+				raise NoSuchElementException(f'Cannot find resort {resort_name}\n{e}')
 
 	def set_category_to_hotel(self):
 		"""Set accomodation category field to hotel"""
@@ -76,6 +87,8 @@ class CmsInput:
 			description_field = self.driver.find_element(By.ID, f'id_description_section_{desc_field_no}_ifr')
 			self.driver.switch_to.frame(description_field)
 			text_area = self.driver.find_element(By.ID, 'tinymce')
+			text_area.send_keys(Keys.CONTROL + "a")
+			text_area.send_keys(Keys.DELETE)
 			if description_type in ['rooms', 'meals']:
 				text_area.send_keys(description_type.capitalize() + '\n\n' + text)
 			else:
@@ -173,7 +186,7 @@ class CmsInput:
 		"""Add iomages to the CMS image client and select them for use in the listing"""
 		if source_company == 'inghams':
 			self.__add_inghams_images(images)
-		elif source_company == 'tui':
+		else:
 			self.__add_tui_images(images)
 
 	def __add_inghams_images(self, images: dict[str, dict[str]]):
@@ -205,4 +218,4 @@ class CmsInput:
 				)
 			action.double_click(selector).perform()
 		except NoSuchElementException as e:
-			raise NoSuchElementException(f'Cannot find facility in available input options.\n{e}')
+			logging.exception(f'Cannot find facility in available input options.\n{e}')
