@@ -9,11 +9,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from src.seleniuim.cms_instance import CmsInstance
 
 
-class CmsOperations(CmsInstance):
+class CmsOperations:
+
+	def __init__(self, cms_instance: CmsInstance):
+		self.cms_instance = cms_instance
 
 	def instantiate_cms_add_page(self):
 		"""Log in and navigate to the Add Accommodation page"""
-		self._log_in()
+		self.cms_instance.log_in()
 		self.navigate_to_add_page()
 
 	def navigate_to_add_page(self, from_listing_page=False):
@@ -24,8 +27,8 @@ class CmsOperations(CmsInstance):
 		else:
 			id = "content-main"
 		try:
-			self.driver.find_element(By.XPATH, f'//*[@id="{id}"]/div[3]/table/tbody/tr[5]/th/a').click()
-			self.driver.find_element(By.XPATH, '//*[@id="content-main"]/ul/li/a').click()
+			self.cms_instance.driver.find_element(By.XPATH, f'//*[@id="{id}"]/div[3]/table/tbody/tr[5]/th/a').click()
+			self.cms_instance.driver.find_element(By.XPATH, '//*[@id="content-main"]/ul/li/a').click()
 		except NoSuchElementException as e:
 			message = f'Cannot navigate to "Add Accommodation Page".\n{e}'
 			logging.exception(message)
@@ -40,20 +43,20 @@ class CmsOperations(CmsInstance):
 			self.navigate_to_add_page(from_listing_page=True)
 			return
 		try:
-			self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/div[4]/input[2]').click()
+			self.cms_instance.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/div[4]/input[2]').click()
 		except NoSuchElementException as e:
 			message = f'Cannot find/select "Save and Add Another" button\n{e}'
 			logging.exception(message)
 			raise NoSuchElementException(message)
 
 		try:
-			WebDriverWait(self.driver, 2).until_not(
+			WebDriverWait(self.cms_instance.driver, 2).until_not(
 				EC.visibility_of_element_located(
 					(By.XPATH, '//*[@id="accommodationpage_form"]/div/p')
 				))
 		except TimeoutException:
 			errors = ''
-			error_list = self.driver.find_element(By.CLASS_NAME, 'errorlist')
+			error_list = self.cms_instance.driver.find_element(By.CLASS_NAME, 'errorlist')
 			error_list_items = error_list.find_elements(By.TAG_NAME, 'li')
 			for error in error_list_items:
 				errors = errors + error.text.strip() + '\n'

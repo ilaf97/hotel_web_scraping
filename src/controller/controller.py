@@ -26,7 +26,7 @@ class BaseController:
 	"""
 
 	def __init__(self, cms_driver: WebDriver):
-		self.cms_input_mapper = CmsListingMapper(cms_driver)
+		self.cms_listing_mapper = CmsListingMapper(cms_driver)
 
 	@staticmethod
 	def _create_data_fields_dict(data_fields: Union[InghamsDataFields, TuiDataFields]) -> dict[any]:
@@ -43,16 +43,16 @@ class BaseController:
 		return data_fields_dict
 
 	def _enter_data_into_cms(self, source: str, hotel_attributes: dict[str, any]):
-		self.cms_input_mapper.add_hotel_name(hotel_attributes['hotel_name'])
-		self.cms_input_mapper.set_holiday_id()
-		self.cms_input_mapper.set_resort(hotel_attributes.get('resort'))
-		self.cms_input_mapper.add_text_description_field(hotel_attributes['description'], 'description')
-		self.cms_input_mapper.add_text_description_field(hotel_attributes['rooms'], 'rooms')
-		self.cms_input_mapper.add_text_description_field(hotel_attributes['meals'], 'meals')
-		self.cms_input_mapper.add_best_for(hotel_attributes['best_for'])
-		self.cms_input_mapper.select_facilities(hotel_attributes['facilities'])
-		self.cms_input_mapper.add_map_location(hotel_attributes['location'])
-		self.cms_input_mapper.add_images(source_company=source, images=hotel_attributes['images'])
+		self.cms_listing_mapper.add_hotel_name(hotel_attributes['hotel_name'])
+		self.cms_listing_mapper.set_holiday_id()
+		self.cms_listing_mapper.set_resort(hotel_attributes.get('resort'))
+		self.cms_listing_mapper.add_text_description_field(hotel_attributes['description'], 'description')
+		self.cms_listing_mapper.add_text_description_field(hotel_attributes['rooms'], 'rooms')
+		self.cms_listing_mapper.add_text_description_field(hotel_attributes['meals'], 'meals')
+		self.cms_listing_mapper.add_best_for(hotel_attributes['best_for'])
+		self.cms_listing_mapper.select_facilities(hotel_attributes['facilities'])
+		self.cms_listing_mapper.add_map_location(hotel_attributes['location'])
+		self.cms_listing_mapper.add_images(source_company=source, images=hotel_attributes['images'])
 
 
 class InghamsController(BaseController, AbstractCompanyController):

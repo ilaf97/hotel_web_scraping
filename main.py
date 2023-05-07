@@ -1,13 +1,16 @@
 import time
 from datetime import datetime
 from typing import Union
+
+from selenium.webdriver.chrome.webdriver import WebDriver
 from tqdm import tqdm
 
 from src.controller.controller import InghamsController, TuiController
 from src.seleniuim.cms_instance import CmsInstance
+from src.seleniuim.cms_operations import CmsOperations
 
 
-class Main(CmsInstance):
+class Main:
 	"""
 	Main class of the web scraping application. This is the user endpoint from which to run the application.
 
@@ -33,8 +36,8 @@ class Main(CmsInstance):
 	- __get_driver_or_html() (Private)
 	"""
 
-	def __init__(self, inghams_filename: str, tui_filename: str, crystal_filename: str):
-		super().__init__()
+	def __init__(self, web_driver: WebDriver, inghams_filename: str, tui_filename: str, crystal_filename: str):
+		self.driver = web_driver
 		self.inghams_controller = InghamsController(inghams_filename, self.driver)
 		self.tui_controller = TuiController(tui_filename, self.driver, 'tui')
 		self.crystal_controller = TuiController(crystal_filename, self.driver, 'crystal_ski')
@@ -155,6 +158,10 @@ if __name__ == '__main__':
 	inghams_filename = f'inghams-{current_date}'
 	tui_filename = f'tui-{current_date}'
 
+	cms_instance = CmsInstance()
+	cms_operations = CmsOperations(cms_instance)
+	web_driver = cms_instance.driver
+
 	main = Main(inghams_filename=inghams_filename, tui_filename=tui_filename, crystal_filename='crystal_ski-2023-05-03 (1)')
 
 	# Scrape and save data for either site
@@ -165,7 +172,7 @@ if __name__ == '__main__':
 	# sys.exit()
 
 	# Add data to CMS
-	main.instantiate_cms_add_page()
+	cms_operations.instantiate_cms_add_page()
 	crystal_controller_instance = main.read_data_and_enter_into_cms('crystal_ski')
 	# tui_controller_instance = main.read_data_and_enter_into_cms('tui')
 	# inghams_controller_instance = main.read_data_and_enter_into_cms('inghams')

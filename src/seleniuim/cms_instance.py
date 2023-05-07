@@ -11,7 +11,7 @@ from src.seleniuim.html_extraction import ExtractHtml
 
 class CmsInstance:
 	"""
-	Class to initialise and manage behaviour of CMS instances.
+	Class to initialise CMS instances.
 
 	Attributes:
 	- driver (WebDriver)
@@ -36,7 +36,7 @@ class CmsInstance:
 		driver = extract_html.parse_html_selenium()
 		return driver
 
-	def _log_in(self):
+	def log_in(self):
 		"""Log in to the CMS using username and password environment variables.
 		If login fails due to not being to select components or enter text, a NoSuchElementException will be raised.
 		Note: exceptions resulting from invalid credentials are not handled"""

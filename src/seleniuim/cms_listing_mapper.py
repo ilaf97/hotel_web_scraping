@@ -7,9 +7,10 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from src.image_handler import ImageHandler
+from src.seleniuim.cms_instance import CmsInstance
 
 
-class CmsListingMapper():
+class CmsListingMapper:
 	"""
 	Class handling input into CMS data fields.
 
@@ -29,8 +30,8 @@ class CmsListingMapper():
 	- __click_correct_option_obj() (Private)
 	"""
 
-	def __init__(self, cms_driver: WebDriver):
-		self.driver = cms_driver
+	def __init__(self, web_driver: WebDriver):
+		self.driver = web_driver
 		self.__inghams_image_handler = \
 			ImageHandler(driver=self.driver, source_company='inghams')
 		self.__crystal_ski_image_handler = \
