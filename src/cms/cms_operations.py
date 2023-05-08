@@ -67,7 +67,7 @@ class CmsOperations:
 
 	def save_listing(self, failed_run=False) -> Union[None, list[str]]:
 		"""Save the listing and check that the save process is successful and the driver returns to a
-		new add Accomodation page.
+		new add Accommodation page.
 		If the listing cannot be saved or the user is not returned to the Add Accommodation page, a NoSuchElement
 		exception will be raised"""
 		if failed_run:
