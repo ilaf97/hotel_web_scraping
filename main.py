@@ -2,9 +2,9 @@ import sys
 
 from src.util.user_input_helper import validate_user_input
 from src.cms.cms_instance import CmsInstance
-from src.cms.cms_operations import CmsOperations
-from datapipeline import DataPipeline
+from src.cms.cms_pipeline import CmsOperations
 from src.util.config_helper import ConfigHelper
+from src.web_scraping.scraping_pipeline import ScrapingPipeline
 
 
 def ask_user_if_continue_after_scraping() -> bool:
@@ -36,6 +36,16 @@ if __name__ == '__main__':
 
 	filename = config_helper.read_filename(company_name)
 
+	# Scrape data from web pages
+	if start_at_beginning:
+		scraping_pipeline = ScrapingPipeline(
+			company_name=company_name,
+			filename=filename
+		)
+		scraping_pipeline.scrape_and_save_data()
+		if not ask_user_if_continue_after_scraping():
+			sys.exit()
+
 	cms_instance = CmsInstance()
 	web_driver = cms_instance.driver
 	cms_operations = CmsOperations(
@@ -43,19 +53,12 @@ if __name__ == '__main__':
 		cms_instance=cms_instance
 	)
 
-
 	data_pipeline = DataPipeline(
 		filename=filename,
 		web_driver=web_driver,
 		company_name=company_name,
 		cms_operations=cms_operations
 	)
-
-	# Scrape data from web pages
-	if start_at_beginning:
-		data_pipeline.scrape_and_save_data()
-		if not ask_user_if_continue_after_scraping():
-			sys.exit()
 
 	# Add data to CMS
 	cms_operations.instantiate_cms_add_page()

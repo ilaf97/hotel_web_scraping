@@ -11,7 +11,7 @@ from src.models.hotel_model import Hotel
 from src.util.hotel_data_helper import convert_json_list_to_hotel_obj_list
 
 
-class DataPipeline:
+class CmsPipeline:
 	"""
 	Main class of the web scraping application. This is the user endpoint from which to run the application.
 
@@ -50,22 +50,6 @@ class DataPipeline:
 		self.cms_operations = cms_operations
 		self.controller = None
 
-	def scrape_and_save_data(self):
-
-		if self.company_name == 'inghams':
-			self.controller = InghamsController(self.filename)
-
-		else:
-			self.controller = TuiController(
-				filename=self.filename,
-				tui_site=self.company_name
-			)
-
-		self.__scrape_data_from_urls(
-			url_list=self.controller.get_url_list(),
-			company_controller=self.controller
-		)
-
 	def read_data_and_enter_into_cms(self) -> Union[InghamsController, TuiController]:
 		self.__iterate_through_hotels(self.controller)
 		return self.controller
@@ -100,18 +84,6 @@ class DataPipeline:
 				self.cms_operations.save_listing(failed_run=True)
 
 			num_items -= 1
-
-	@staticmethod
-	def __scrape_data_from_urls(
-			url_list: list[str],
-			company_controller: Union[InghamsController, TuiController]
-	):
-		company_controller.create_json_file()
-		for url in tqdm(url_list):
-			url_web_driver = company_controller.get_driver_obj(url.strip())
-			hotel = company_controller.get_hotel_obj(url_web_driver)
-			company_controller.save_data.add_data(hotel)
-			del hotel
 
 	@staticmethod
 	def __record_failed_run(
