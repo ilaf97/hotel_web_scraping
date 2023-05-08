@@ -40,18 +40,6 @@ class TuiController(BaseController):
 		self.save_data = SaveWebScrapingData(self.__filename, tui_site)
 		self.read_data = ReadData(self.__filename, tui_site)
 
-	def create_json_file(self):
-		"""Create file into which scraped data can be saved"""
-		self.save_data.create_json_file()
-
-	def read_scraped_data(self) -> list[str] and Iterator[any]:
-		"""Returns column headers and a row iterator object"""
-		return self.read_data.read_data()
-
-	def get_url_list(self) -> list[str]:
-		"""Returns all URLs of listings to scrape"""
-		return self.read_data.read_url_list()
-
 	@staticmethod
 	def get_driver_obj(page_url: str) -> WebDriver:
 		"""Returns a newly instantiated Selenium WebDriver object"""

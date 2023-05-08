@@ -59,10 +59,10 @@ class CmsListingMapper:
 			try:
 				self.driver.find_element(By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]').click()
 			except NoSuchElementException as e:
-				raise NoSuchElementException(f'Cannot find resort {resort_name}\n{e}')
+				logging.warning(f'Cannot find resort {resort_name}\n{e}')
 
 	def set_category_to_hotel(self):
-		"""Set accomodation category field to hotel"""
+		"""Set accommodation category field to hotel"""
 		try:
 			self.driver.find_element(By.ID, 'id_category').click()
 			self.driver.find_element(By.XPATH, '//*[@id="id_category"]/option[3]').click()

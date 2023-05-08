@@ -5,12 +5,15 @@ from typing import Union
 from selenium.webdriver.chrome.webdriver import WebDriver
 from tqdm import tqdm
 
-from src.controller.controller import InghamsController, TuiController
+from src.controller.inghams_controller import InghamsController
+from src.controller.tui_controller import TuiController
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_operations import CmsOperations
 
 
 class Run:
+	# TODO: get rid of this class as it shouldn't exist in it's current form
+	# The methods within do not share common objectives
 	"""
 	Main class of the web scraping application. This is the user endpoint from which to run the application.
 
@@ -51,30 +54,24 @@ class Run:
 
 	def scrape_and_save_data(self, source_company):
 		self.__check_source_company(source_company)
+
 		if source_company == 'inghams':
-			url_list = self.__get_inghams_url_list()
-			self.__iterate_through_url_list(
-				url_list=url_list,
-				source_company=source_company,
-				company_controller=self.inghams_controller
-			)
+			controller = self.inghams_controller
+
 		elif source_company == 'crystal_ski':
-			url_list = self.__get_crystal_ski_url_list()
-			self.__iterate_through_url_list(
-				url_list=url_list,
-				source_company=source_company,
-				company_controller=self.crystal_controller
-			)
+			controller = self.crystal_controller
+
 		else:
-			url_list = self.__get_tui_url_list()
-			self.__iterate_through_url_list(
-				url_list=url_list,
-				source_company=source_company,
-				company_controller=self.tui_controller
-			)
+			controller = self.tui_controller
+
+		self.__scrape_data_from_urls(
+			url_list=controller.get_url_list(),
+			company_controller=controller
+		)
 
 	def read_data_and_enter_into_cms(self, source_company: str) -> Union[InghamsController, TuiController]:
 		self.__check_source_company(source_company)
+
 		if source_company == 'inghams':
 			self.__iterate_through_hotel_dict(self.inghams_controller)
 			return self.inghams_controller
@@ -96,16 +93,8 @@ class Run:
 	@staticmethod
 	def __check_source_company(source_company: str):
 		if source_company not in ['inghams', 'crystal_ski', 'tui']:
-			raise ValueError(f'source_company must be either "inghams", "tui" or "crystal_ski" ("{source_company}" passed')
-
-	def __get_inghams_url_list(self) -> list[str]:
-		return self.inghams_controller.get_url_list()
-
-	def __get_tui_url_list(self) -> list[str]:
-		return self.tui_controller.get_url_list()
-
-	def __get_crystal_ski_url_list(self) -> list[str]:
-		return self.crystal_controller.get_url_list()
+			raise ValueError(
+				f'source_company must be either "inghams", "tui" or "crystal_ski" ("{source_company}" passed')
 
 	def __get_driver_or_html(self, source_company: str, page_url: str):
 		if source_company == 'inghams':
@@ -131,18 +120,17 @@ class Run:
 					company_controller=company_controller,
 					hotel_dict=hotel_dict)
 				self.cms_operations.save_listing(failed_run=True)
-				# If any exception occurs, want to return new hotel json
+			# If any exception occurs, want to return new hotel json
 			num_items -= 1
 
-	def __iterate_through_url_list(
-			self,
-			source_company,
+	@staticmethod
+	def __scrape_data_from_urls(
 			url_list: list[str],
 			company_controller: Union[InghamsController, TuiController]
 	):
 		company_controller.create_json_file()
 		for url in tqdm(url_list):
-			url_html_obj = self.__get_driver_or_html(source_company, url.strip())
+			url_html_obj = company_controller.get_driver_obj(url.strip())
 			hotel_dict = company_controller.get_data_fields_json(url_html_obj)
 			company_controller.save_data.add_data(hotel_dict)
 
@@ -169,7 +157,8 @@ if __name__ == '__main__':
 	cms_operations = CmsOperations(cms_instance)
 	web_driver = cms_instance.driver
 
-	main = Run(inghams_filename=inghams_filename, tui_filename=tui_filename, crystal_filename='crystal_ski-2023-05-03 (1)')
+	main = Run(inghams_filename=inghams_filename, tui_filename=tui_filename,
+			   crystal_filename='crystal_ski-2023-05-03 (1)')
 
 	# Scrape and save data for either site
 	# main.scrape_and_save_data('crystal_ski')
@@ -191,5 +180,3 @@ if __name__ == '__main__':
 	# 	print('Some listings failed to be recorded in Inghams data')
 
 	print('Complete! Please check site listings to ensure data is correct')
-
-
