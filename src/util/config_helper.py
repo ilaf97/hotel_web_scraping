@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from user_input_helper import validate_user_input
+from src.util.user_input_helper import validate_user_input
 
 import yaml
 
@@ -8,12 +8,12 @@ import yaml
 class ConfigHelper:
 
 	def __init__(self):
-		self.__ROOT_DIR = Path(__file__).parent.parent
+		self.__ROOT_DIR = Path(__file__).parent.parent.parent
 		self.config_file_path = f'{self.__ROOT_DIR}/data/config.yaml'
 
 	@staticmethod
 	def user_prompt_about_generating_filename() -> bool:
-		user_prompt = "The program can store all scraped data into a new JSON file.\n" \
+		user_prompt = "\n\n\nThe program can store all scraped data into a new JSON file.\n" \
 					  "This generated new file will be named '<company_name>-YYYY-MM-DD', " \
 					  "with the date being today's date.\n" \
 					  "Note that generating a new file with overwrite any existing files with the same name.\n\n" \
@@ -34,7 +34,7 @@ class ConfigHelper:
 	def set_new_filename_in_config(self, filename: str, company_name: str):
 		config = self.__open_config_file()
 		config['file_names'][company_name] = filename
-		with open(self.config_file_path) as f:
+		with open(self.config_file_path, 'w') as f:
 			yaml.safe_dump(config, f, default_flow_style=False)
 
 	@staticmethod

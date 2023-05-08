@@ -41,12 +41,13 @@ class DataPipeline:
 			self,
 			web_driver: WebDriver,
 			filename: str,
-			company_name: str
+			company_name: str,
+			cms_operations: CmsOperations
 	):
 		self.driver = web_driver
 		self.filename = filename
 		self.company_name = company_name
-		self.cms_operations = CmsOperations(web_driver)
+		self.cms_operations = cms_operations
 		self.controller = None
 
 	def scrape_and_save_data(self):
@@ -55,7 +56,10 @@ class DataPipeline:
 			self.controller = InghamsController(self.filename)
 
 		else:
-			self.controller = TuiController(self.filename)
+			self.controller = TuiController(
+				filename=self.filename,
+				tui_site=self.company_name
+			)
 
 		self.__scrape_data_from_urls(
 			url_list=self.controller.get_url_list(),

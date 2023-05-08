@@ -26,7 +26,7 @@ class SaveWebScrapingData:
 	def __init__(self, filename: str, source_company: str):
 		self.filename = filename
 		self.source_company = source_company
-		self.__ROOT_DIR = Path(__file__).parent.parent
+		self.__ROOT_DIR = Path(__file__).parent.parent.parent
 
 	def create_json_file(self, failed_runs: bool = False):
 		filename = self.__fail_check(failed_runs)

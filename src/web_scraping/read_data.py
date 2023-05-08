@@ -22,7 +22,7 @@ class ReadData:
 	def __init__(self, filename: str, source_company: str):
 		self.filename = filename
 		self.source_company = source_company
-		self.__ROOT_DIR = Path(__file__).parent.parent
+		self.__ROOT_DIR = Path(__file__).parent.parent.parent
 
 	def read_url_list(self) -> list[str]:
 		"""Returns complete list of URLs contained in CSV as located by class attributes"""
