@@ -6,7 +6,7 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from src.image_handler import ImageHandler
+from src.util.image_handler import ImageHandler
 from src.util.hotel_facility_mapping import hotel_facility_mapping
 
 class CmsListingMapper:
@@ -147,7 +147,7 @@ class CmsListingMapper:
 		map_iframe_field.send_keys(map_iframe)
 
 	def add_images(self, source_company: str, images: Union[dict[str, dict[str, str]], list[str]]):
-		"""Add iomages to the CMS image client and select them for use in the listing"""
+		"""Add i mages to the CMS image client and select them for use in the listing"""
 		if source_company == 'inghams':
 			self.__add_inghams_images(images)
 		else:

@@ -11,12 +11,10 @@ from src.controller.tui_controller import TuiController
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_operations import CmsOperations
 from src.models.hotel_model import Hotel
-from src.util.hotel_json_helper import convert_json_list_to_hotel_obj_list
+from src.util.hotel_data_helper import convert_json_list_to_hotel_obj_list
 
 
-class Run:
-	# TODO: get rid of this class as it shouldn't exist in it's current form
-	# The methods within do not share common objectives
+class DataPipeline:
 	"""
 	Main class of the web scraping application. This is the user endpoint from which to run the application.
 
@@ -45,13 +43,11 @@ class Run:
 	def __init__(
 			self,
 			web_driver: WebDriver,
-			cms_operations: CmsOperations,
 			inghams_filename: str,
 			tui_filename: str,
 			crystal_filename: str):
 		self.driver = web_driver
-		self.cms_operations = cms_operations
-		self.cms_listing_mapper = CmsListingMapper(web_driver)
+		self.cms_operations = CmsOperations(web_driver)
 		self.inghams_controller = InghamsController(inghams_filename)
 		self.tui_controller = TuiController(tui_filename, 'tui')
 		self.crystal_controller = TuiController(crystal_filename, 'crystal_ski')
@@ -94,30 +90,6 @@ class Run:
 		except FileNotFoundError:
 			return False
 
-	def __enter_hotel_data_into_cms(self, source: str, hotel: Hotel):
-		self.cms_listing_mapper.add_hotel_name(hotel.name)
-		self.cms_listing_mapper.set_holiday_id()
-		self.cms_listing_mapper.set_resort(hotel.resort)
-		self.cms_listing_mapper.add_text_description_field(
-			hotel.description,
-			description_type='description'
-		)
-		self.cms_listing_mapper.add_text_description_field(
-			hotel.rooms,
-			description_type='rooms'
-		)
-		self.cms_listing_mapper.add_text_description_field(
-			hotel.meals,
-			description_type='meals'
-		)
-		self.cms_listing_mapper.add_best_for(hotel.best_for)
-		self.cms_listing_mapper.select_facilities(hotel.facilities)
-		self.cms_listing_mapper.add_map_location(hotel.location)
-		self.cms_listing_mapper.add_images(
-			source_company=source,
-			images=hotel.images
-		)
-
 	@staticmethod
 	def __check_source_company(source_company: str):
 		if source_company not in ['inghams', 'crystal_ski', 'tui']:
@@ -142,7 +114,7 @@ class Run:
 		while num_items:
 			hotel = hotels.pop(0)
 			try:
-				self.__enter_hotel_data_into_cms(company_name, hotel)
+				self.cms_operations.__enter_hotel_data_into_cms(company_name, hotel)
 				time.sleep(1)
 				self.cms_operations.save_listing()
 			except Exception as e:
@@ -188,8 +160,8 @@ if __name__ == '__main__':
 	cms_operations = CmsOperations(cms_instance)
 	web_driver = cms_instance.driver
 
-	main = Run(inghams_filename=inghams_filename, tui_filename=tui_filename,
-			   crystal_filename='crystal_ski-2023-05-03 (1)')
+	main = DataPipeline(inghams_filename=inghams_filename, tui_filename=tui_filename,
+						crystal_filename='crystal_ski-2023-05-03 (1)')
 
 	# Scrape and save data for either site
 	# main.scrape_and_save_data('crystal_ski')
