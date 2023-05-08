@@ -5,10 +5,13 @@ from typing import Union
 from selenium.webdriver.chrome.webdriver import WebDriver
 from tqdm import tqdm
 
+from src.cms.cms_listing_mapper import CmsListingMapper
 from src.controller.inghams_controller import InghamsController
 from src.controller.tui_controller import TuiController
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_operations import CmsOperations
+from src.models.hotel_model import Hotel
+from src.util.hotel_json_helper import convert_json_list_to_hotel_obj_list
 
 
 class Run:
@@ -48,9 +51,10 @@ class Run:
 			crystal_filename: str):
 		self.driver = web_driver
 		self.cms_operations = cms_operations
-		self.inghams_controller = InghamsController(inghams_filename, self.driver)
-		self.tui_controller = TuiController(tui_filename, self.driver, 'tui')
-		self.crystal_controller = TuiController(crystal_filename, self.driver, 'crystal_ski')
+		self.cms_listing_mapper = CmsListingMapper(web_driver)
+		self.inghams_controller = InghamsController(inghams_filename)
+		self.tui_controller = TuiController(tui_filename, 'tui')
+		self.crystal_controller = TuiController(crystal_filename, 'crystal_ski')
 
 	def scrape_and_save_data(self, source_company):
 		self.__check_source_company(source_company)
@@ -73,13 +77,13 @@ class Run:
 		self.__check_source_company(source_company)
 
 		if source_company == 'inghams':
-			self.__iterate_through_hotel_dict(self.inghams_controller)
+			self.__iterate_through_hotels(self.inghams_controller)
 			return self.inghams_controller
 		elif source_company == 'crystal_ski':
-			self.__iterate_through_hotel_dict(self.crystal_controller)
+			self.__iterate_through_hotels(self.crystal_controller)
 			return self.crystal_controller
 		else:
-			self.__iterate_through_hotel_dict(self.tui_controller)
+			self.__iterate_through_hotels(self.tui_controller)
 			return self.tui_controller
 
 	@staticmethod
@@ -89,6 +93,30 @@ class Run:
 			return True
 		except FileNotFoundError:
 			return False
+
+	def __enter_hotel_data_into_cms(self, source: str, hotel: Hotel):
+		self.cms_listing_mapper.add_hotel_name(hotel.name)
+		self.cms_listing_mapper.set_holiday_id()
+		self.cms_listing_mapper.set_resort(hotel.resort)
+		self.cms_listing_mapper.add_text_description_field(
+			hotel.description,
+			description_type='description'
+		)
+		self.cms_listing_mapper.add_text_description_field(
+			hotel.rooms,
+			description_type='rooms'
+		)
+		self.cms_listing_mapper.add_text_description_field(
+			hotel.meals,
+			description_type='meals'
+		)
+		self.cms_listing_mapper.add_best_for(hotel.best_for)
+		self.cms_listing_mapper.select_facilities(hotel.facilities)
+		self.cms_listing_mapper.add_map_location(hotel.location)
+		self.cms_listing_mapper.add_images(
+			source_company=source,
+			images=hotel.images
+		)
 
 	@staticmethod
 	def __check_source_company(source_company: str):
@@ -104,23 +132,26 @@ class Run:
 		else:
 			return self.tui_controller.get_driver_obj(page_url)
 
-	def __iterate_through_hotel_dict(
+	def __iterate_through_hotels(
 			self, company_controller: Union[InghamsController, TuiController]):
+		company_name = company_controller.company_name
 		hotels_json = company_controller.read_data.read_data()
-		num_items = len(hotels_json)
+		hotels = convert_json_list_to_hotel_obj_list(hotels_json)
+		num_items = len(hotels)
+
 		while num_items:
-			hotel_dict = hotels_json.pop(0)
+			hotel = hotels.pop(0)
 			try:
-				company_controller.enter_data(hotel_dict)
+				self.__enter_hotel_data_into_cms(company_name, hotel)
 				time.sleep(1)
 				self.cms_operations.save_listing()
 			except Exception as e:
-				hotel_dict['failed_reason'] = e.__str__()
+				hotel.failed_reason = e.__str__()
 				self.__record_failed_run(
 					company_controller=company_controller,
-					hotel_dict=hotel_dict)
+					hotel=hotel)
 				self.cms_operations.save_listing(failed_run=True)
-			# If any exception occurs, want to return new hotel json
+
 			num_items -= 1
 
 	@staticmethod
@@ -130,13 +161,13 @@ class Run:
 	):
 		company_controller.create_json_file()
 		for url in tqdm(url_list):
-			url_html_obj = company_controller.get_driver_obj(url.strip())
-			hotel_dict = company_controller.get_data_fields_json(url_html_obj)
-			company_controller.save_data.add_data(hotel_dict)
+			url_web_driver = company_controller.get_driver_obj(url.strip())
+			hotel = company_controller.get_hotel_obj(url_web_driver)
+			company_controller.save_data.add_data(hotel)
 
 	@staticmethod
 	def __record_failed_run(
-			hotel_dict: any,
+			hotel: Hotel,
 			company_controller: Union[InghamsController, TuiController]
 	):
 		try:
@@ -144,7 +175,7 @@ class Run:
 		except FileNotFoundError:
 			company_controller.save_data.create_json_file(failed_runs=True)
 
-		company_controller.save_data.add_data(hotel_dict, failed_runs=True)
+		company_controller.save_data.add_data(hotel, failed_runs=True)
 
 
 if __name__ == '__main__':

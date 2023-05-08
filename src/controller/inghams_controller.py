@@ -4,7 +4,8 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from src.controller.controller import BaseController
-from src.inghams.data_fields import InghamsDataFields
+from src.inghams.data_fields import InghamsSiteData
+from src.models.hotel_model import Hotel
 from src.web_driver_factory import WebDriverFactory
 
 
@@ -27,11 +28,11 @@ class InghamsController(BaseController):
 	- get_inghams_data_fields()
 	- enter_inghams_data()
 	"""
+	company_name = 'inghams'
 
-	def __init__(self, filename: str, web_driver: WebDriver):
+	def __init__(self, filename: str):
 		BaseController.__init__(
 			self,
-			web_driver=web_driver,
 			filename=filename,
 			company_name='inghams')
 
@@ -41,10 +42,10 @@ class InghamsController(BaseController):
 		ex_html = WebDriverFactory(page_url)
 		return ex_html.parse_html_bs()
 
-	def get_data_fields_json(self, html_obj: BeautifulSoup) -> dict[any]:
+	def get_hotel_obj(self, html_obj: BeautifulSoup) -> Hotel:
 		"""Returns raw data scraped from a given Ingham's listing"""
-		data_fields = InghamsDataFields(html_obj)
-		data_fields_dict = self._create_data_fields_dict(data_fields)
-		data_fields_dict['excursions'] = data_fields.get_excursions()
-		return data_fields_dict
+		inghams_site_data = InghamsSiteData(html_obj)
+		inghams_hotel = self._create_hotel(inghams_site_data)
+		inghams_hotel['excursions'] = inghams_site_data.get_excursions()
+		return inghams_hotel
 

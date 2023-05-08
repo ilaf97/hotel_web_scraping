@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 
-class TuiDataFields:
+class TuiSiteData:
 
 	"""
 	Class allowing data from required fields to be scraped from hotel page's JS driver object.
@@ -103,7 +103,7 @@ class TuiDataFields:
 		except NoSuchElementException:
 			return ' '
 
-	def get_images(self):
+	def get_images(self) -> list[str]:
 		"""Returns all images URLS for hotel"""
 		hotel_images = []
 		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')

@@ -1,5 +1,8 @@
 import json
 from pathlib import Path
+from dataclasses import asdict
+
+from src.models.hotel_model import Hotel
 
 
 class SaveWebScrapingData:
@@ -30,12 +33,12 @@ class SaveWebScrapingData:
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'w') as f:
 			json.dump([], f)
 
-	def add_data(self, hotel_data: dict[any], failed_runs: bool = False):
+	def add_data(self, hotel: Hotel, failed_runs: bool = False):
 		filename = self.__fail_check(failed_runs)
 		"""Add data to the CSV file associated with the class attribute data"""
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'r+') as f:
 			data_list = json.load(f)
-			data_list.append(hotel_data)
+			data_list.append(asdict(hotel))
 			f.seek(0)
 			json.dump(data_list, f)
 

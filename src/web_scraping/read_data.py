@@ -37,3 +37,4 @@ class ReadData:
 		"""Returns headers and row iterator object from web scraping results CSV"""
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'r') as f:
 			return json.load(f)
+

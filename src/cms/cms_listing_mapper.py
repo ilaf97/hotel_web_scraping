@@ -7,8 +7,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from src.image_handler import ImageHandler
-from src.cms.cms_instance import CmsInstance
-
+from src.util.hotel_facility_mapping import hotel_facility_mapping
 
 class CmsListingMapper:
 	"""
@@ -116,58 +115,22 @@ class CmsListingMapper:
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find best for field/add best for\n{e}')
 
-	def select_facilities(self, facilities: str):
+	def select_facilities(self, facilities: list[str]):
 		"""Select facilities from options field and validate correct selection has been made"""
 		facilities_list = facilities
 		options_selected = []
 		options_to_select = []
-		available_facilities_to_select = {
-			'bowling': '1',
-			'spa': '2',
-			'heated outdoor pool': '3',
-			'skidoo': '4',
-			'walking': '5',
-			'gym': '6',
-			'parapenting': '7',
-			'snowshoeing': '8',
-			'snow sure': '9',
-			'high altitude skiing': '10',
-			'high-altitude skiing': '10',
-			'village resort': '11',
-			'family friendly': '12',
-			'tv': '13',
-			'television': '13',
-			'sauna': '14',
-			'balcony': '15',
-			'outdoor pool': '16',
-			'outdoor pools': '16',
-			'swimming pool': '17',
-			'swimming pools': '17',
-			'restaurant': '18',
-			'bar': '19',
-			'dishwasher': '20',
-			'coffee': '21',
-			'oven': '22',
-			'fridge': '23',
-			'refrigerator': '24',
-			'microwave': '25'
-		}
 		for facility in facilities_list:
-			for key in available_facilities_to_select.keys():
-				#TODO: reverse order such that options chosen from bottom up
+			for key in hotel_facility_mapping.keys():
 				if key in facility.lower():
-					options_to_select.append(int(available_facilities_to_select[key]))
+					options_to_select.append(int(hotel_facility_mapping[key]))
 					options_selected.append(key)
 
 		options_to_select.sort(reverse=True)
 		for option in options_to_select:
 			self.__click_correct_option_obj(option)
-		# options_recorded = (self.driver.find_element(By.ID, 'id_features_to').text.lower() + '\n').strip().split('\n')
-		# # Check options selected match with facilities input
-		# if not len([record for record in options_recorded if any(item in record for item in options_selected)]):
-		# 	raise AssertionError('Not all selected facilities have been successfully recorded!')
 
-	def add_map_location(self, location: str):
+	def add_map_location(self, location: dict[str: Union[str, list[int]]]):
 		"""Add the location in the form of a iframe_map object"""
 		lat = location['lat_long'][0]
 		lon = location['lat_long'][1]

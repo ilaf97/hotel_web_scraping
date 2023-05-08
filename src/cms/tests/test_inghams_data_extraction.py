@@ -1,6 +1,6 @@
 import unittest
 from src.cms.html_extraction import WebDriverFactory
-from src.inghams.data_fields import InghamsDataFields
+from src.inghams.data_fields import InghamsSiteData
 
 
 class TestInghamsDataFields(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestInghamsDataFields(unittest.TestCase):
 		eh = WebDriverFactory(
 			'https://www.inghams.co.uk/destinations/italy/neapolitan-riviera/amalfi-coast/hotel-aurora-amalfi#0')
 		html_obj = eh.parse_html_bs()
-		cls.df = InghamsDataFields(html_obj)
+		cls.df = InghamsSiteData(html_obj)
 
 	def test_get_name(self):
 		name = self.df.get_name()

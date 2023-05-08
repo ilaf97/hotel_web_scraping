@@ -2,7 +2,7 @@ from typing import Union
 from bs4 import BeautifulSoup, ResultSet
 
 
-class InghamsDataFields:
+class InghamsSiteData:
 
 	"""
 	Class allowing data from required fields to be scraped from hotel page's HTML object.
