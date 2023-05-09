@@ -5,6 +5,7 @@ from src.cms.cms_instance import CmsInstance
 from src.cms.cms_pipeline import CmsOperations
 from src.util.config_helper import ConfigHelper
 from src.web_scraping.scraping_pipeline import ScrapingPipeline
+from src.cms.cms_pipeline import CmsPipeline
 
 
 def ask_user_if_continue_after_scraping() -> bool:
@@ -49,22 +50,22 @@ if __name__ == '__main__':
 	cms_instance = CmsInstance()
 	web_driver = cms_instance.driver
 	cms_operations = CmsOperations(
-		web_driver=web_driver,
 		cms_instance=cms_instance
 	)
 
-	data_pipeline = DataPipeline(
+	cms_pipeline = CmsPipeline(
 		filename=filename,
 		web_driver=web_driver,
 		company_name=company_name,
-		cms_operations=cms_operations
+		cms_operations=cms_operations,
+
 	)
 
 	# Add data to CMS
 	cms_operations.instantiate_cms_add_page()
-	controller = data_pipeline.read_data_and_enter_into_cms()
+	controller = cms_pipeline.read_data_and_enter_into_cms()
 
-	if data_pipeline.check_for_failed_runs(controller):
+	if cms_pipeline.check_for_failed_runs(controller):
 		print(f'Some listings failed to be recorded in {company_name} data')
 
 	print('Complete! Please check site listings to ensure data is correct')

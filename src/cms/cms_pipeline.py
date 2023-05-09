@@ -2,7 +2,6 @@ import time
 from typing import Union
 
 from selenium.webdriver.chrome.webdriver import WebDriver
-from tqdm import tqdm
 
 from src.controller.inghams_controller import InghamsController
 from src.controller.tui_controller import TuiController
@@ -48,7 +47,11 @@ class CmsPipeline:
 		self.filename = filename
 		self.company_name = company_name
 		self.cms_operations = cms_operations
-		self.controller = None
+
+		if company_name == 'inghams':
+			self.controller = InghamsController(filename)
+		else:
+			self.controller = TuiController(filename, company_name)
 
 	def read_data_and_enter_into_cms(self) -> Union[InghamsController, TuiController]:
 		self.__iterate_through_hotels(self.controller)
