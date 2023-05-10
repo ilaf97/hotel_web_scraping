@@ -35,7 +35,7 @@ class ImageHandler:
 	def __init__(self, driver: WebDriver, source_company: str):
 		self.__driver = driver
 		self.source_company = source_company
-		self.__ROOT_DIR = Path(__file__).parent.parent
+		self.__ROOT_DIR = Path(__file__).parent.parent.parent
 
 	def save_image(self, image_name: str, image_url: str):
 		"""Save image from URL in directory"""

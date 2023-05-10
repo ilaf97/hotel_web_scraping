@@ -100,7 +100,7 @@ class CmsListingMapper:
 	def add_best_for(self, best_for_dict: dict[str]):
 		best_for_str = ''
 
-		if not best_for_dict:
+		if best_for_dict is None:
 			best_for_str = 'Coming soon!'
 		else:
 			for key, value in best_for_dict.items():
@@ -114,6 +114,8 @@ class CmsListingMapper:
 			self.driver.switch_to.default_content()
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find best for field/add best for\n{e}')
+
+	#TODO: remove airport stuff
 
 	def select_facilities(self, facilities: list[str]):
 		"""Select facilities from options field and validate correct selection has been made"""
