@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from src.util.image_handler import ImageHandler
 from src.util.hotel_facility_mapping import hotel_facility_mapping
 
+
 class CmsListingMapper:
 	"""
 	Class handling input into CMS data fields.
@@ -39,11 +40,9 @@ class CmsListingMapper:
 			ImageHandler(driver=self.driver, source_company='tui')
 
 	def add_hotel_name(self, name: str):
-		"""Add hotel name to accommodation title and slug fields"""
+		"""Add hotel name to accommodation title. Slug field is updated in UI automatically"""
 		try:
 			self.driver.find_element(By.ID, 'id_title').send_keys(name)
-			# self.driver.find_element(By.ID, 'id_slug').send_keys(
-			# 	name.lower().replace(' ', '-').replace(',', '').replace("'", ''))
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find/edit "Title" field\n{e}')
 		self.set_category_to_hotel()
@@ -115,7 +114,15 @@ class CmsListingMapper:
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find best for field/add best for\n{e}')
 
-	#TODO: remove airport stuff
+	def remove_airport_info(self):
+		for num in [1, 0]:
+			try:
+				self.driver.find_element(
+					By.CSS_SELECTOR,
+					f'#accommodationdepartingarrival_set-{num} > td.delete > div > a'
+				).click()
+			except NoSuchElementException as e:
+				raise NoSuchElementException(f"Cannot find button to delete airport info\n{e}")
 
 	def select_facilities(self, facilities: list[str]):
 		"""Select facilities from options field and validate correct selection has been made"""

@@ -58,6 +58,7 @@ class CmsOperations:
 		self.cms_listing_mapper.add_best_for(hotel.best_for)
 		self.cms_listing_mapper.select_facilities(hotel.facilities)
 		self.cms_listing_mapper.add_map_location(hotel.location)
+		self.cms_listing_mapper.remove_airport_info()
 		self.cms_listing_mapper.add_images(
 			source_company=source,
 			images=hotel.images
