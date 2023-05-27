@@ -3,38 +3,15 @@ from typing import Union
 
 from selenium.webdriver.chrome.webdriver import WebDriver
 
+from src.cms.cms_operations import CmsOperations
+from src.controller.crystal_controller import CrystalController
 from src.controller.inghams_controller import InghamsController
 from src.controller.tui_controller import TuiController
-from src.cms.cms_operations import CmsOperations
 from src.models.hotel_model import Hotel
 from src.util.hotel_data_helper import convert_json_list_to_hotel_obj_list
 
 
 class CmsPipeline:
-	"""
-	Main class of the web scraping application. This is the user endpoint from which to run the application.
-
-	Params:
-	- inghams_filename (str): the filename under which to save scraped Ingham's site data
-	- tui_filename (str): the filename under which to save scraped TUI site data
-
-	Attributes:
-	- inghams_controller (InghamsController)
-	- tui_controller (TuiController)
-	- controller (Controller)
-	- __tui_items (int) (Private)
-	- __inghams_items (int) (Private)
-
-	Methods:
-	- scrape_and_save_data()
-	- read_data_and_enter_into_cms()
-	- navigate_to_add_page()
-	- __create_row_dict() (Private)
-	- __check_source_company() (Private)
-	- __get_inghams_url_list() (Private)
-	- __get_tui_url_list() (Private)
-	- __get_driver_or_html() (Private)
-	"""
 
 	def __init__(
 			self,
@@ -50,10 +27,14 @@ class CmsPipeline:
 
 		if company_name == 'inghams':
 			self.controller = InghamsController(filename)
+		elif company_name == "tui":
+			self.controller = TuiController(filename)
+		elif company_name == "crystal_ski":
+			self.controller = CrystalController(filename)
 		else:
-			self.controller = TuiController(filename, company_name)
+			raise ValueError(f"Invalid company name passed ({company_name})")
 
-	def read_data_and_enter_into_cms(self) -> Union[InghamsController, TuiController]:
+	def read_data_and_enter_into_cms(self) -> Union[InghamsController, TuiController, CrystalController]:
 		self.__iterate_through_hotels(self.controller)
 		return self.controller
 
@@ -66,7 +47,7 @@ class CmsPipeline:
 			return False
 
 	def __iterate_through_hotels(
-			self, company_controller: Union[InghamsController, TuiController]):
+			self, company_controller: Union[InghamsController, TuiController, CrystalController]):
 		hotels_json = company_controller.read_data.read_data()
 		hotels = convert_json_list_to_hotel_obj_list(hotels_json)
 		num_items = len(hotels)
@@ -91,7 +72,7 @@ class CmsPipeline:
 	@staticmethod
 	def __record_failed_run(
 			hotel: Hotel,
-			company_controller: Union[InghamsController, TuiController]
+			company_controller: Union[InghamsController, TuiController, CrystalController]
 	):
 		try:
 			company_controller.read_data.read_data(failed_runs=True)

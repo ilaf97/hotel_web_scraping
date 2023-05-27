@@ -1,13 +1,9 @@
-from collections import Iterator
-
 from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.webdriver import WebDriver
+from src.inghams.data_fields import InghamsSiteData
 
 from src.controller.controller import BaseController
-from src.inghams.data_fields import InghamsSiteData
 from src.models.hotel_model import Hotel
 from src.web_driver_factory import WebDriverFactory
-
 
 
 class InghamsController(BaseController):
@@ -28,13 +24,13 @@ class InghamsController(BaseController):
 	- get_inghams_data_fields()
 	- enter_inghams_data()
 	"""
-	company_name = 'inghams'
 
 	def __init__(self, filename: str):
 		BaseController.__init__(
 			self,
 			filename=filename,
-			company_name='inghams')
+			company_name="inghams"
+		)
 
 	@staticmethod
 	def get_driver_obj(page_url: str) -> BeautifulSoup:

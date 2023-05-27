@@ -1,6 +1,5 @@
 import json
 import re
-import time
 from typing import Union
 
 from selenium.common import NoSuchElementException
@@ -10,35 +9,16 @@ from selenium.webdriver.common.by import By
 
 class TuiSiteData:
 
-	"""
-	Class allowing data from required fields to be scraped from hotel page's JS driver object.
-	Params:
-	- driver (WebDriver): the hotel's web page JavaScript driver object as found by Selenium
-	Attributes:
-	- __driver (WebDriver) (Private)
-	- __page_source (str) (Private)
-	Methods:
-	- get_name()
-	- get_description()
-	- get_rooms()
-	- get_location()
-	- get_facilities()
-	- get_food_and_drink()
-	- __dismiss_cookies_banner() (Private)
-	"""
-
 	def __init__(self, driver: WebDriver):
 		self.__driver = driver
 		self.__dismiss_cookies_banner()
 		self.__page_source = driver.page_source
 
 	def get_name(self) -> str:
-		"""Returns hotel name"""
 		hotel_name_html_obj = self.__driver.find_element(By.TAG_NAME, 'h1')
 		return hotel_name_html_obj.text.strip()
 
 	def get_description(self) -> str:
-		"""Returns description of hotel"""
 		about_tab_objs = self.__driver.find_element(By.CLASS_NAME, 'About__content').text.strip()
 		disclaimer = self.__driver.find_element(By.XPATH, '//*[@id="disclaimer__component"]/div').text.strip()
 		description = about_tab_objs + '\n' + disclaimer
@@ -50,7 +30,6 @@ class TuiSiteData:
 		return dict()
 
 	def get_rooms(self) -> str:
-		"""Returns rooms available at hotel"""
 		room_str = ''
 		self.__driver.find_element(By.ID, 'rooms').click()
 		rooms = self.__driver.find_elements(By.CLASS_NAME, 'UI__roomListWrapper')
@@ -62,7 +41,6 @@ class TuiSiteData:
 		return room_str
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
-		"""Returns hotel's location"""
 		location_dict = {}
 		self.__driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
 		location_dict['description'] = \
@@ -77,7 +55,6 @@ class TuiSiteData:
 		return location_dict
 
 	def get_facilities(self) -> list[str]:
-		"""Returns facilities available at hotel"""
 		facility_list = []
 		try:
 			facilities_data = json.loads(self.__page_source.split('accommFacilitiesJsonData = ')[1].split('};')[0] + '}')
@@ -89,7 +66,6 @@ class TuiSiteData:
 			return ['']
 
 	def get_meals(self) -> str:
-		"""Returns meal options"""
 		board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
 		self.__driver.find_element(By.XPATH, '//*[@id="facilities"]').click()
 		try:
@@ -104,7 +80,6 @@ class TuiSiteData:
 			return ' '
 
 	def get_images(self) -> list[str]:
-		"""Returns all images URLS for hotel"""
 		hotel_images = []
 		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')
 		gallery_images = gallery_data['galleryImages']
@@ -118,12 +93,7 @@ class TuiSiteData:
 		return hotel_images
 
 	def __dismiss_cookies_banner(self):
-		"""Close the cookies dialog that is present at the launch of new browser instance.
-		Returns:
-		- None
-		Exceptions:
-		- Exception (custom): thrown when no cookie dialog present or found
-		"""
+		"""Close the cookies dialog that is present at the launch of new browser instance"""
 		try:
 			self.__driver.find_element(By.ID, 'cmNotifyBanner')
 		except NoSuchElementException:

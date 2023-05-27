@@ -1,10 +1,11 @@
 from typing import Union
 
-from src.inghams.data_fields import InghamsSiteData
+from src.crystal_ski.crystal_data_fields import CrystalSiteData
+from src.inghams.inghams_data_fields import InghamsSiteData
 from src.models.hotel_model import Hotel
-from src.web_scraping.save_data import SaveWebScrapingData
+from src.tui.tui_data_fields import TuiSiteData
 from src.web_scraping.read_data import ReadData
-from src.tui.data_fields import TuiSiteData
+from src.web_scraping.save_data import SaveWebScrapingData
 
 
 class BaseController:
@@ -31,10 +32,13 @@ class BaseController:
 		self.read_data = ReadData(self.filename, company_name)
 
 	@staticmethod
-	def _create_hotel(site_data: Union[InghamsSiteData, TuiSiteData]) -> Hotel:
+	def _create_hotel(site_data: Union[InghamsSiteData, TuiSiteData, CrystalSiteData]) -> Hotel:
+		hotel_name = site_data.get_name()
 		return Hotel(
-			name=site_data.get_name(),
+			name=hotel_name,
+			slug=site_data.generate_slug(hotel_name),
 			description=site_data.get_description(),
+			resort=site_data.get_resort(),
 			best_for=site_data.get_best_for(),
 			rooms=site_data.get_rooms(),
 			location=site_data.get_location(),

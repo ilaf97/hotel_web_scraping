@@ -1,40 +1,18 @@
 from typing import Union
+
 from bs4 import BeautifulSoup, ResultSet
 
 
 class InghamsSiteData:
 
-	"""
-	Class allowing data from required fields to be scraped from hotel page's HTML object.
-
-	Params:
-	- html_object (BeautifulSoup): the hotel's HTML page object as parsed by BeautifulSoup
-
-	Attributes:
-	- html_object (BeautifulSoup)
-
-	Methods:
-	- get_name()
-	- get_description()
-	- get_rooms()
-	- get_location()
-	- get_facilities()
-	- get_meals()
-	- get_excursions()
-	- __get_all_tab_div_content() (Private)
-	- __format_text() (Private)
-	"""
-
 	def __init__(self, html_object: BeautifulSoup):
 		self.__html_object = html_object
 
 	def get_name(self) -> str:
-		"""Returns hotel name"""
 		hotel_name_html_obj = self.__html_object.find_all('h1', class_='c-heading-h1')[0]
 		return hotel_name_html_obj.text.strip()
 
 	def get_description(self) -> str:
-		"""Returns description of hotel"""
 		description_html_objs = self.__html_object.find(id='descriptionAccTop')
 		p_tags = description_html_objs.find_all('p')
 		return self.__format_text(p_tags)
@@ -44,7 +22,6 @@ class InghamsSiteData:
 		return dict()
 
 	def get_rooms(self) -> str:
-		"""Returns rooms available at hotel"""
 		accommodation_tab_objs = self.__html_object.find(id='tabpanel0')
 		p_tags = accommodation_tab_objs.find_all('p')
 		for index, p in enumerate(p_tags):
@@ -54,7 +31,6 @@ class InghamsSiteData:
 		return self.__format_text(room_description)
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
-		"""Returns hotel's location"""
 		location_dict = {}
 		location_tab_objs = self.__html_object.find(id='tabpanel5')
 		li_tags = location_tab_objs.find_all('li')
@@ -68,7 +44,6 @@ class InghamsSiteData:
 		return location_dict
 
 	def get_facilities(self) -> list[str]:
-		"""Returns facilities available at hotel"""
 		facilities_list = []
 		facilities_tab_objs = self.__html_object.find(id='tabpanel3')
 		ul_tags = facilities_tab_objs.find_all('ul')
@@ -77,15 +52,12 @@ class InghamsSiteData:
 		return facilities_list
 
 	def get_meals(self) -> str:
-		"""Returns meal options"""
 		return self.__get_all_tab_div_content('6')
 
 	def get_excursions(self) -> str:
-		"""Returns available excursions from the hotel"""
 		return self.__get_all_tab_div_content('2')
 
 	def get_images(self):
-		"""Returns all images URLS for hotel"""
 		image_objs = self.__html_object.find_all('div', class_='c-slider__list')[0]
 		img_tags = image_objs.find_all('img')
 		img_name = image_objs.find_all('div', class_='c-slider__item')
@@ -106,9 +78,8 @@ class InghamsSiteData:
 		"""Retrieve all div content from given tab.
 		Params:
 		- panel_no (str): HTML panel no. for desired tab
+		"""
 
-		Returns:
-		Formatted string of div element's text representation"""
 		try:
 			tab_objs = self.__html_object.find(id='tabpanel' + panel_no)
 			div = tab_objs.find_all('div', class_='c-accordion__content')

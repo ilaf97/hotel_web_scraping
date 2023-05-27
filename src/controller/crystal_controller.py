@@ -3,18 +3,18 @@ import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from src.controller.controller import BaseController
+from src.crystal_ski.crystal_data_fields import CrystalSiteData
 from src.models.hotel_model import Hotel
-from src.tui.tui_data_fields import TuiSiteData
 from src.web_driver_factory import WebDriverFactory
 from src.web_scraping.read_data import ReadData
 from src.web_scraping.save_data import SaveWebScrapingData
 
-company_name = "Tui"
+company_name = "crystal_ski"
 
 
-class TuiController(BaseController):
+class CrystalController(BaseController):
 
-	def __init__(self, filename: str):
+	def __init__(self, filename: str, tui_site: str):
 		BaseController.__init__(
 			self,
 			filename=filename,
@@ -31,9 +31,7 @@ class TuiController(BaseController):
 		return ex_html.parse_html_selenium()
 
 	def get_hotel_obj(self, driver: WebDriver) -> Hotel:
-		"""Returns raw data scraped from a given TUI listing"""
-		tui_site_data = TuiSiteData(driver)
+		"""Returns raw data scraped from a given Crystal listing"""
+		crystal_site_data = CrystalSiteData(driver)
 		time.sleep(1)
-		return self._create_hotel(tui_site_data)
-
-
+		return self._create_hotel(crystal_site_data)

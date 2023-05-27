@@ -1,27 +1,12 @@
 import json
-from pathlib import Path
 from dataclasses import asdict
+from pathlib import Path
 
 from src.models.hotel_model import Hotel
 
 
 class SaveWebScrapingData:
-	"""
-	Class for saving data into JSON format.
-
-	Params:
-	- filename (str): the name of the file to save
-	- company (str): the name of the company from which the data originates
-
-	Attributes:
-	- filename (str)
-	- source_company (str)
-	- ROOT_DIR (_P) (Private)
-
-	Methods:
-	- create_file()
-	- add_data()
-	"""
+	"""Class for saving data into JSON format"""
 
 	def __init__(self, filename: str, source_company: str):
 		self.filename = filename
@@ -35,10 +20,15 @@ class SaveWebScrapingData:
 
 	def add_data(self, hotel: Hotel, failed_runs: bool = False):
 		filename = self.__fail_check(failed_runs)
+		if failed_runs:
+			hotel = {
+				"name": hotel.name,
+				"failed reason": hotel.failed_reason
+			}
 		"""Add data to the CSV file associated with the class attribute data"""
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'r+') as f:
 			data_list = json.load(f)
-			data_list.append(asdict(hotel))
+			data_list.append(asdict(hotel) if not failed_runs else hotel)
 			f.seek(0)
 			json.dump(data_list, f)
 

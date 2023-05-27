@@ -1,33 +1,20 @@
 import logging
-from typing import Union, Optional
 import random
+from typing import Union, Optional
+
 from selenium.common import NoSuchElementException
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from src.util.image_handler import ImageHandler
 from src.util.hotel_facility_mapping import hotel_facility_mapping
+from src.util.image_handler import ImageHandler
 
 
 class CmsListingMapper:
 	"""
 	Class handling input into CMS data fields.
-
-	Attributes:
-	- __inghams_image_handler (ImageHandler) (Private)
-	- __tui_image_handler (ImageHandler) (Private)
-
-	Methods:
-	- add_hotel_name()
-	- set_category_to_hotel()
-	- add_text_description_field()
-	- select_facilities()
-	- add_map_location()
-	- add_images()
-	- __add_inghams_images() (Private)
-	- __add_tui_inmages() (Private)
-	- __click_correct_option_obj() (Private)
+	It maps data from the hotel properties to the correct CMS fields.
 	"""
 
 	def __init__(self, web_driver: WebDriver):
@@ -39,10 +26,11 @@ class CmsListingMapper:
 		self.__tui_image_handler = \
 			ImageHandler(driver=self.driver, source_company='tui')
 
-	def add_hotel_name(self, name: str):
-		"""Add hotel name to accommodation title. Slug field is updated in UI automatically"""
+	def add_hotel_name(self, name: str, slug: Optional[str]):
 		try:
 			self.driver.find_element(By.ID, 'id_title').send_keys(name)
+			if slug:
+				self.driver.find_element(By.ID, 'id_slug').send_keys(slug)
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find/edit "Title" field\n{e}')
 		self.set_category_to_hotel()
@@ -53,14 +41,12 @@ class CmsListingMapper:
 
 	def set_resort(self, resort_name: Optional[str]):
 		if resort_name:
-			"""Set resort name field"""
 			try:
 				self.driver.find_element(By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]').click()
 			except NoSuchElementException as e:
 				logging.warning(f'Cannot find resort {resort_name}\n{e}')
 
 	def set_category_to_hotel(self):
-		"""Set accommodation category field to hotel"""
 		try:
 			self.driver.find_element(By.ID, 'id_category').click()
 			self.driver.find_element(By.XPATH, '//*[@id="id_category"]/option[3]').click()
@@ -68,10 +54,7 @@ class CmsListingMapper:
 			raise NoSuchElementException(f'Cannot find category field/change category\n{e}')
 
 	def add_text_description_field(self, text: str, description_type: str):
-		"""Add description fields for general description, rooms and meals.
-		Params:
-		- text (str): string to input as description body
-		- description_type (str): string selector to determine the content type"""
+
 		if description_type == 'description':
 			desc_field_no = 'one'
 		elif description_type == 'rooms':
@@ -125,7 +108,6 @@ class CmsListingMapper:
 				raise NoSuchElementException(f"Cannot find button to delete airport info\n{e}")
 
 	def select_facilities(self, facilities: list[str]):
-		"""Select facilities from options field and validate correct selection has been made"""
 		facilities_list = facilities
 		options_selected = []
 		options_to_select = []
@@ -140,7 +122,6 @@ class CmsListingMapper:
 			self.__click_correct_option_obj(option)
 
 	def add_map_location(self, location: dict[str: Union[str, list[int]]]):
-		"""Add the location in the form of a iframe_map object"""
 		lat = location['lat_long'][0]
 		lon = location['lat_long'][1]
 		map_iframe = f'<iframe ' \
@@ -156,7 +137,6 @@ class CmsListingMapper:
 		map_iframe_field.send_keys(map_iframe)
 
 	def add_images(self, source_company: str, images: Union[dict[str, dict[str, str]], list[str]]):
-		"""Add i mages to the CMS image client and select them for use in the listing"""
 		if source_company == 'inghams':
 			self.__add_inghams_images(images)
 		else:
@@ -173,7 +153,6 @@ class CmsListingMapper:
 		self.__inghams_image_handler.delete_images()
 
 	def __add_tui_images(self, images: list[str]):
-		"""Add images from TUI listings"""
 		for image_url in images:
 			image_name = str(image_url).split('/')[-1]
 			self.__tui_image_handler.save_image(image_name, image_url)

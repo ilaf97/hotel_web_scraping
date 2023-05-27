@@ -1,36 +1,19 @@
-import json
-from typing import Union
 import html
+import json
 import re
+from typing import Union
+
 from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+
+from src.models.data_fields_base_class import DataFieldsBaseClass
 
 
-class TuiDataFields:
-
-	"""
-	Class allowing data from required fields to be scraped from hotel page's JS driver object.
-
-	Params:
-	- driver (WebDriver): the hotel's web page JavaScript driver object as found by Selenium
-
-	Attributes:
-	- __driver (WebDriver) (Private)
-	- __page_source (str) (Private)
-
-	Methods:
-	- get_name()
-	- get_description()
-	- get_rooms()
-	- get_location()
-	- get_facilities()
-	- get_meals()
-	- __dismiss_cookies_banner() (Private)
-	"""
+class CrystalSiteData(DataFieldsBaseClass):
 
 	def __init__(self, driver: WebDriver):
 		self.__driver = driver
@@ -38,12 +21,21 @@ class TuiDataFields:
 		self.__page_source = driver.page_source
 
 	def get_name(self) -> str:
-		"""Returns hotel name"""
 		hotel_name_html_obj = self.__driver.find_element(By.TAG_NAME, 'h1')
 		return hotel_name_html_obj.text.strip().capitalize()
 
+	@staticmethod
+	def generate_slug(hotel_name: str) -> str:
+		formatted_hotel_name = hotel_name.lower().replace(" ", "-")
+		new_slug = formatted_hotel_name + "-crystal"
+		return new_slug
+
+	def get_resort(self) -> str:
+		# TODO: add in tag for resort name
+		resort_name_obj = self.__driver.find_element(By.TAG_NAME, "resort_tag")
+		return resort_name_obj.text.strip().capitalize()
+
 	def get_description(self) -> str:
-		"""Returns description of hotel"""
 		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')
 		description = html.unescape(gallery_data['featureCodesAndValues']['introduction'][0])
 		description = re.sub(r'\([^<>]*\)', '', description)
@@ -63,13 +55,11 @@ class TuiDataFields:
 		return best_for_dict
 
 	def get_rooms(self) -> str:
-		"""Returns rooms available at hotel"""
 		self.__driver.find_element(By.XPATH, '//*[@id="rooms"]/a').click()
 		rooms = html.unescape(self.__driver.find_element(By.CLASS_NAME, 'SkiRoomInfo__roomInfoBlock').text.strip())
 		return rooms
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
-		"""Returns hotel's location"""
 		location_dict = {}
 		self.__driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
 		WebDriverWait(self.__driver, 10).until(EC.presence_of_element_located((By.ID, 'sights__component')))
@@ -87,7 +77,6 @@ class TuiDataFields:
 		return location_dict
 
 	def get_facilities(self) -> list[str]:
-		"""Returns facilities available at hotel"""
 		facilities_string = json.loads(
 			self.__page_source.split('accommodationFacilities  = ')[1].split('};')[0] + '}'
 		)['featureCodesAndValues']['AF0047'][0]
@@ -95,7 +84,6 @@ class TuiDataFields:
 		return facilities_string
 
 	def get_meals(self) -> str:
-		"""Returns meal options"""
 		board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
 		board_description = self.__driver.find_element(
 			By.XPATH,
@@ -104,7 +92,6 @@ class TuiDataFields:
 		return board_type + '\n' + board_description
 
 	def get_images(self):
-		"""Returns all images URLS for hotel"""
 		hotel_images = []
 		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')
 		gallery_images = gallery_data['galleryImages']
@@ -118,13 +105,8 @@ class TuiDataFields:
 		return hotel_images
 
 	def __dismiss_cookies_banner(self):
-		"""Close the cookies dialog that is present at the launch of new browser instance.
-		Returns:
-		- None
+		"""Close the cookies dialog that is present at the launch of new browser instance"""
 
-		Exceptions:
-		- Exception (custom): thrown when no cookie dialog present or found
-		"""
 		try:
 			self.__driver.find_element(By.ID, 'cmNotifyBanner')
 		except NoSuchElementException:

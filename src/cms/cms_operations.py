@@ -5,8 +5,8 @@ from typing import Union
 from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_listing_mapper import CmsListingMapper
@@ -40,7 +40,7 @@ class CmsOperations:
 			raise NoSuchElementException(message)
 
 	def populate_new_listing(self, source: str, hotel: Hotel):
-		self.cms_listing_mapper.add_hotel_name(hotel.name)
+		self.cms_listing_mapper.add_hotel_name(hotel.name, hotel.slug)
 		self.cms_listing_mapper.set_holiday_id()
 		self.cms_listing_mapper.set_resort(hotel.resort)
 		self.cms_listing_mapper.add_text_description_field(
@@ -74,7 +74,7 @@ class CmsOperations:
 			return
 
 		try:
-			self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/div[4]/input[2]').click()
+			self.driver.find_element(By.XPATH, '//*[@id="accommodationpage_form"]/div/div[5]/input[2]').click()
 		except NoSuchElementException as e:
 			message = f'Cannot find/select "Save and Add Another" button\n{e}'
 			logging.exception(message)

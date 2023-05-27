@@ -13,5 +13,5 @@ class Hotel:
 	meals: str
 	images: list[str]
 	resort: Optional[str] = None
+	slug: Optional[str] = None
 	failed_reason: Optional[str] = None
-
