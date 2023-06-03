@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 
 from src.util.hotel_facility_mapping import hotel_facility_mapping
 from src.util.image_handler import ImageHandler
+from src.util.resort_name_mapping import resort_name_mapping
 
 
 class CmsListingMapper:
@@ -42,7 +43,15 @@ class CmsListingMapper:
 	def set_resort(self, resort_name: Optional[str]):
 		if resort_name:
 			try:
-				self.driver.find_element(By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]').click()
+				resort_name_field = self.driver.find_element(
+					By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]'
+				)
+				resort_name_drop_down_format = resort_name.replace(" ", "-").replace("'", "").replace("`", "")
+				resort_option_number = resort_name_mapping.get(resort_name_drop_down_format)
+				if resort_option_number:
+					# TODO: create generic option clicker below for facilities and resort selection
+					self.__click_correct_option_obj(resort_option_number)
+
 			except NoSuchElementException as e:
 				logging.warning(f'Cannot find resort {resort_name}\n{e}')
 
