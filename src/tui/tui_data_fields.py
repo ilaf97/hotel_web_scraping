@@ -18,6 +18,19 @@ class TuiSiteData:
 		hotel_name_html_obj = self.__driver.find_element(By.TAG_NAME, 'h1')
 		return hotel_name_html_obj.text.strip()
 
+	@staticmethod
+	def generate_slug(hotel_name: str) -> None:
+		return None
+
+	def get_resort(self) -> str:
+		# TODO: add in tag for resort name
+		location_description_obj = self.__driver.find_element(
+			By.XPATH,
+			'//*[@id="headerContainer__component"]/div/div/div/div[1]/div[2]/span[1]/p'
+		)
+		resort = self.__extract_resort_from_location_description(location_description_obj.text)
+		return resort
+
 	def get_description(self) -> str:
 		about_tab_objs = self.__driver.find_element(By.CLASS_NAME, 'About__content').text.strip()
 		disclaimer = self.__driver.find_element(By.XPATH, '//*[@id="disclaimer__component"]/div').text.strip()
@@ -91,6 +104,15 @@ class TuiSiteData:
 			else:
 				break
 		return hotel_images
+
+	@staticmethod
+	def __extract_resort_from_location_description(resort: str) -> str:
+		resort_and_country = resort.split(",")
+		if len(resort_and_country) == 3:
+			resort = resort_and_country[1]
+		else:
+			resort = resort_and_country[0].split(" ")[1]
+		return resort.strip().capitalize()
 
 	def __dismiss_cookies_banner(self):
 		"""Close the cookies dialog that is present at the launch of new browser instance"""

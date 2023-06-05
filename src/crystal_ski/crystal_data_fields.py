@@ -32,8 +32,12 @@ class CrystalSiteData(DataFieldsBaseClass):
 
 	def get_resort(self) -> str:
 		# TODO: add in tag for resort name
-		resort_name_obj = self.__driver.find_element(By.TAG_NAME, "resort_tag")
-		return resort_name_obj.text.strip().capitalize()
+		location_description_obj = self.__driver.find_element(
+			By.XPATH,
+			'//*[@id="headerContainer__component"]/div/div/div/div[1]/div[2]/span[1]/p'
+		)
+		resort = self.__extract_resort_from_location_description(location_description_obj.text)
+		return resort
 
 	def get_description(self) -> str:
 		gallery_data = json.loads(self.__page_source.split('galleryData = ')[1].split('};')[0] + '}')
@@ -49,7 +53,10 @@ class CrystalSiteData(DataFieldsBaseClass):
 		best_for_dict = {}
 		experience_levels = ['beginners', 'intermediates', 'advanced', 'boarders']
 		for level in experience_levels:
-			level_div = self.__driver.find_element(By.CLASS_NAME, f'SkiResortInfo__{level}')
+			try:
+				level_div = self.__driver.find_element(By.CLASS_NAME, f'SkiResortInfo__{level}')
+			except NoSuchElementException:
+				break
 			best_for_dict[level] = (5 - len(get_empty_rating_rectangles(level_div))) * '★'
 
 		return best_for_dict
@@ -103,6 +110,15 @@ class CrystalSiteData(DataFieldsBaseClass):
 			else:
 				break
 		return hotel_images
+
+	@staticmethod
+	def __extract_resort_from_location_description(resort: str) -> str:
+		resort_and_country = resort.split(",")
+		if len(resort_and_country) == 3:
+			resort = resort_and_country[1]
+		else:
+			resort = resort_and_country[0].split(" ")[1]
+		return resort.strip().capitalize()
 
 	def __dismiss_cookies_banner(self):
 		"""Close the cookies dialog that is present at the launch of new browser instance"""

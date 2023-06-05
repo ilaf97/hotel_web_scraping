@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
-from src.inghams.data_fields import InghamsSiteData
 
 from src.controller.controller import BaseController
+from src.inghams.inghams_data_fields import InghamsSiteData
 from src.models.hotel_model import Hotel
 from src.web_driver_factory import WebDriverFactory
 

@@ -14,7 +14,7 @@ company_name = "crystal_ski"
 
 class CrystalController(BaseController):
 
-	def __init__(self, filename: str, tui_site: str):
+	def __init__(self, filename: str):
 		BaseController.__init__(
 			self,
 			filename=filename,
