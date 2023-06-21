@@ -9,7 +9,6 @@ from selenium.webdriver.common.by import By
 
 from src.util.hotel_facility_mapping import hotel_facility_mapping
 from src.util.image_handler import ImageHandler
-from src.util.resort_name_mapping import resort_name_mapping
 
 
 class CmsListingMapper:
@@ -43,17 +42,14 @@ class CmsListingMapper:
 	def set_resort(self, resort_name: Optional[str]):
 		if resort_name:
 			try:
-				resort_name_field = self.driver.find_element(
-					By.XPATH, f'//*[@id="id_resort"]/option[text()={resort_name}]'
-				)
-				resort_name_drop_down_format = resort_name.replace(" ", "-").replace("'", "").replace("`", "")
-				resort_option_number = resort_name_mapping.get(resort_name_drop_down_format)
-				if resort_option_number:
-					# TODO: create generic option clicker below for facilities and resort selection
-					self.__click_correct_option_obj(resort_option_number)
+				resort_name_drop_down_format = resort_name.replace(" ", "-").replace("'", "").replace("`", "").lower()
+				self.driver.find_element(
+					By.XPATH,
+					f'//*[@id="id_resort"]'
+				).send_keys(resort_name_drop_down_format)
 
 			except NoSuchElementException as e:
-				logging.warning(f'Cannot find resort {resort_name}\n{e}')
+				logging.warning(f'Cannot find resort {resort_name} in list\n{e}')
 
 	def set_category_to_hotel(self):
 		try:
@@ -107,20 +103,18 @@ class CmsListingMapper:
 			raise NoSuchElementException(f'Cannot find best for field/add best for\n{e}')
 
 	def remove_airport_info(self):
-		for num in [1, 0]:
-			try:
-				self.driver.find_element(
-					By.CSS_SELECTOR,
-					f'#accommodationdepartingarrival_set-{num} > td.delete > div > a'
-				).click()
-			except NoSuchElementException as e:
-				raise NoSuchElementException(f"Cannot find button to delete airport info\n{e}")
+		try:
+			self.driver.find_element(
+				By.CSS_SELECTOR,
+				f'#accommodationdepartingarrival_set-0 > td.delete > div > a'
+			).click()
+		except NoSuchElementException as e:
+			raise NoSuchElementException(f"Cannot find button to delete airport info\n{e}")
 
 	def select_facilities(self, facilities: list[str]):
-		facilities_list = facilities
 		options_selected = []
 		options_to_select = []
-		for facility in facilities_list:
+		for facility in facilities:
 			for key in hotel_facility_mapping.keys():
 				if key in facility.lower():
 					options_to_select.append(int(hotel_facility_mapping[key]))
@@ -128,7 +122,7 @@ class CmsListingMapper:
 
 		options_to_select.sort(reverse=True)
 		for option in options_to_select:
-			self.__click_correct_option_obj(option)
+			self.__click_correct_facility_option_obj(option)
 
 	def add_map_location(self, location: dict[str: Union[str, list[int]]]):
 		lat = location['lat_long'][0]
@@ -169,14 +163,14 @@ class CmsListingMapper:
 		self.__tui_image_handler.upload_and_select_images(pathlist)
 		self.__tui_image_handler.delete_images()
 
-	def __click_correct_option_obj(self, option_no: int):
+	def __click_correct_facility_option_obj(self, option_num: int):
 		"""Click the correct DOM object corresponding to a given facility value"""
 		try:
 			action = ActionChains(self.driver)
 			selector = self.driver.find_element(
-					By.XPATH,
-					f'//*[@id="id_features_from"]/option[{option_no}]'
-				)
+				By.XPATH,
+				f'//*[@id="id_features_from"]/option[{option_num}]'
+			)
 			action.double_click(selector).perform()
 		except NoSuchElementException as e:
 			logging.exception(f'Cannot find facility in available input options.\n{e}')

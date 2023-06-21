@@ -5,10 +5,10 @@ from typing import Generator
 
 import requests
 from selenium.common import TimeoutException, NoSuchElementException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class ImageHandler:
@@ -70,12 +70,12 @@ class ImageHandler:
 			for counter, image in enumerate(image_paths):
 				if counter == 15:
 					break
-				if 2 < counter < 15:
+				if 0 < counter < 15:
 					# Add another image slider
 					self.__driver.find_element(
-							By.LINK_TEXT,
-							'Add another IMAGE SLIDER'
-						).click()
+						By.LINK_TEXT,
+						'Add another IMAGE SLIDER'
+					).click()
 				# Open image selector in new tab
 				self.__driver.find_element(
 					By.ID,

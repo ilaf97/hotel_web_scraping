@@ -31,7 +31,6 @@ class CrystalSiteData(DataFieldsBaseClass):
 		return new_slug
 
 	def get_resort(self) -> str:
-		# TODO: add in tag for resort name
 		location_description_obj = self.__driver.find_element(
 			By.XPATH,
 			'//*[@id="headerContainer__component"]/div/div/div/div[1]/div[2]/span[1]/p'

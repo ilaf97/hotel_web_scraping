@@ -4,19 +4,19 @@ from typing import Union
 
 from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver import Keys
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from src.cms.cms_instance import CmsInstance
 from src.cms.cms_listing_mapper import CmsListingMapper
 from src.models.hotel_model import Hotel
 
 
 class CmsOperations:
 
-	def __init__(self, cms_instance: CmsInstance):
-		self.driver = cms_instance.driver
+	def __init__(self, web_driver: WebDriver):
+		self.driver = web_driver
 		self.cms_listing_mapper = CmsListingMapper(self.driver)
 
 	def instantiate_cms_add_page(self):

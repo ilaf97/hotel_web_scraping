@@ -1,8 +1,7 @@
 import time
 from typing import Union
 
-from selenium.webdriver.chrome.webdriver import WebDriver
-
+from src.cms.cms_instance import CmsInstance
 from src.cms.cms_operations import CmsOperations
 from src.controller.crystal_controller import CrystalController
 from src.controller.inghams_controller import InghamsController
@@ -15,12 +14,10 @@ class CmsPipeline:
 
 	def __init__(
 			self,
-			web_driver: WebDriver,
 			filename: str,
 			company_name: str,
 			cms_operations: CmsOperations
 	):
-		self.driver = web_driver
 		self.filename = filename
 		self.company_name = company_name
 		self.cms_operations = cms_operations
@@ -53,6 +50,7 @@ class CmsPipeline:
 		num_items = len(hotels)
 
 		while num_items:
+			start_time = time.time()
 			hotel = hotels.pop(0)
 			try:
 				self.cms_operations.populate_new_listing(
@@ -66,6 +64,9 @@ class CmsPipeline:
 					company_controller=company_controller,
 					hotel=hotel)
 				self.cms_operations.save_listing(failed_run=True)
+			run_time = time.time() - start_time
+			if run_time > 300:
+				self.__delete_and_reinitialise_web_driver()
 
 			num_items -= 1
 
@@ -80,3 +81,15 @@ class CmsPipeline:
 			company_controller.save_data.create_json_file(failed_runs=True)
 
 		company_controller.save_data.add_data(hotel, failed_runs=True)
+
+	def __delete_and_reinitialise_web_driver(self):
+		"""The aim of this is to speed up long-running executions that slow due to the driver instance"""
+		self.cms_operations.driver.quit()
+		del self.cms_operations
+		# TODO: this code is duplicated in main
+		cms_instance = CmsInstance()
+		web_driver = cms_instance.driver
+		self.cms_operations = CmsOperations(
+			web_driver=web_driver
+		)
+		self.cms_operations.instantiate_cms_add_page()

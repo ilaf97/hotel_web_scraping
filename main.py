@@ -1,16 +1,16 @@
 import sys
 
-from src.util.user_input_helper import validate_user_input
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_pipeline import CmsOperations
-from src.util.config_helper import ConfigHelper
-from src.web_scraping.scraping_pipeline import ScrapingPipeline
 from src.cms.cms_pipeline import CmsPipeline
+from src.util.config_helper import ConfigHelper
+from src.util.user_input_helper import validate_user_input
+from src.web_scraping.scraping_pipeline import ScrapingPipeline
 
 
 def ask_user_if_continue_after_scraping() -> bool:
 	user_prompt = "\n\n\nWeb scraping is complete!\n" \
-				  "Populate the CMS with the data? (Y/N)"
+				  "Populate the CMS with the data? (Y/N)\n"
 	user_response = input(user_prompt)
 	return validate_user_input(user_response)
 
@@ -19,7 +19,7 @@ def ask_user_to_define_process_start_point() -> bool:
 	user_prompt = "This program can be started either from the very beginning, " \
 				  "scraping the web page data then populating the CMS right away, " \
 				  "or can be started mid-way at the CMS input stage.\n" \
-				  "Start from the beginning of the process? (Y/N)"
+				  "Start from the beginning of the process? (Y/N)\n"
 	user_response = input(user_prompt)
 	return validate_user_input(user_response)
 
@@ -50,12 +50,11 @@ if __name__ == '__main__':
 	cms_instance = CmsInstance()
 	web_driver = cms_instance.driver
 	cms_operations = CmsOperations(
-		cms_instance=cms_instance
+		web_driver=web_driver
 	)
 
 	cms_pipeline = CmsPipeline(
 		filename=filename,
-		web_driver=web_driver,
 		company_name=company_name,
 		cms_operations=cms_operations,
 
