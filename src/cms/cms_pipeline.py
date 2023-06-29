@@ -59,14 +59,15 @@ class CmsPipeline:
 				time.sleep(1)
 				self.cms_operations.save_listing()
 			except Exception as e:
+				if e == TimeoutError:
+					hotels = hotels.extend([hotel])
+					self.__delete_and_reinitialise_web_driver()
 				hotel.failed_reason = e.__str__()
 				self.__record_failed_run(
 					company_controller=company_controller,
 					hotel=hotel)
 				self.cms_operations.save_listing(failed_run=True)
 			run_time = time.time() - start_time
-			if run_time > 300:
-				self.__delete_and_reinitialise_web_driver()
 
 			num_items -= 1
 

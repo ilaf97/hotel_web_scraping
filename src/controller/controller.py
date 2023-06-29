@@ -42,8 +42,8 @@ class BaseController:
 			best_for=site_data.get_best_for(),
 			rooms=site_data.get_rooms(),
 			location=site_data.get_location(),
-			facilities=site_data.get_facilities(),
-			meals=site_data.get_meals(),
+			individual_facilities=site_data.get_individual_facilities(),
+			facilities_descriptions=site_data.get_facilities_descriptions,
 			images=site_data.get_images(),
 		)
 

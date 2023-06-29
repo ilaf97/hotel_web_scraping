@@ -62,7 +62,7 @@ class TestTuiDataFields(unittest.TestCase):
 		)
 
 	def test_get_facilities(self):
-		facilities = self.df.get_facilities()
+		facilities = self.df.get_individual_facilities()
 		self.assertIn(
 			'Two outdoor pools',
 			facilities,

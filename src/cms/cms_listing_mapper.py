@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 from typing import Union, Optional
@@ -7,7 +8,6 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from src.util.hotel_facility_mapping import hotel_facility_mapping
 from src.util.image_handler import ImageHandler
 
 
@@ -111,9 +111,13 @@ class CmsListingMapper:
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f"Cannot find button to delete airport info\n{e}")
 
-	def select_facilities(self, facilities: list[str]):
+	def select_individual_facilities(self, facilities: list[str]):
 		options_selected = []
 		options_to_select = []
+
+		with open('src/util/facility_mapping.json', 'r') as f:
+			hotel_facility_mapping = json.load(f)
+
 		for facility in facilities:
 			for key in hotel_facility_mapping.keys():
 				if key in facility.lower():

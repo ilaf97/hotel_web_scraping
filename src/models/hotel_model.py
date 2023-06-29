@@ -9,8 +9,8 @@ class Hotel:
 	best_for: dict[str]
 	rooms: str
 	location: dict[str: Union[str, list[int]]]
-	facilities: list[str]
-	meals: str
+	individual_facilities: list[str]
+	facilities_descriptions: dict[str, str]
 	images: list[str]
 	resort: Optional[str] = None
 	slug: Optional[str] = None

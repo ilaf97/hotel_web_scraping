@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Union
 
+import timeout_decorator
 from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver import Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -24,21 +25,17 @@ class CmsOperations:
 		self.__log_in()
 		self.navigate_to_add_page()
 
-	def navigate_to_add_page(self, from_listing_page=False):
+	def navigate_to_add_page(self):
 		"""Navigate to the Add Accommodation page.
 		If this is not possible, a NoSuchElementException will be raised"""
-		if from_listing_page:
-			id = "nav-sidebar"
-		else:
-			id = "content-main"
 		try:
-			self.driver.find_element(By.XPATH, f'//*[@id="{id}"]/div[3]/table/tbody/tr[5]/th/a').click()
-			self.driver.find_element(By.XPATH, '//*[@id="content-main"]/ul/li/a').click()
+			self.driver.get("https://igetaway.co.uk/admin/pages/accommodationpage/add/")
 		except NoSuchElementException as e:
 			message = f'Cannot navigate to "Add Accommodation Page".\n{e}'
 			logging.exception(message)
 			raise NoSuchElementException(message)
 
+	@timeout_decorator.timeout(300)
 	def populate_new_listing(self, source: str, hotel: Hotel):
 		self.cms_listing_mapper.add_hotel_name(hotel.name, hotel.slug)
 		self.cms_listing_mapper.set_holiday_id()
@@ -52,11 +49,11 @@ class CmsOperations:
 			description_type='rooms'
 		)
 		self.cms_listing_mapper.add_text_description_field(
-			hotel.meals,
+			hotel.facilities_descriptions['MEALS'],
 			description_type='meals'
 		)
 		self.cms_listing_mapper.add_best_for(hotel.best_for)
-		self.cms_listing_mapper.select_facilities(hotel.facilities)
+		self.cms_listing_mapper.select_individual_facilities(hotel.facilities)
 		self.cms_listing_mapper.add_map_location(hotel.location)
 		self.cms_listing_mapper.remove_airport_info()
 		self.cms_listing_mapper.add_images(
@@ -70,7 +67,7 @@ class CmsOperations:
 		If the listing cannot be saved or the user is not returned to the Add Accommodation page, a NoSuchElement
 		exception will be raised"""
 		if failed_run:
-			self.navigate_to_add_page(from_listing_page=True)
+			self.navigate_to_add_page()
 			return
 
 		try:

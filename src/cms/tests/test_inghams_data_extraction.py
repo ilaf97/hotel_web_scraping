@@ -1,4 +1,5 @@
 import unittest
+
 from src.cms.html_extraction import WebDriverFactory
 from src.inghams.data_fields import InghamsSiteData
 
@@ -57,7 +58,7 @@ class TestInghamsDataFields(unittest.TestCase):
 		)
 
 	def test_get_facilities(self):
-		facilities = self.df.get_facilities()
+		facilities = self.df.get_individual_facilities()
 		self.assertIn(
 			'Private beach with sun loungers and parasols',
 			facilities,

@@ -6,6 +6,8 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
+from src.tui.facilities import FacilitiesCategories
+
 
 class TuiSiteData:
 
@@ -48,6 +50,28 @@ class TuiSiteData:
 	def get_best_for() -> dict[str]:
 		return dict()
 
+	def get_individual_facilities(self) -> list[str]:
+		facility_list = []
+		try:
+			facilities_data = json.loads(
+				self.__page_source.split('accommFacilitiesJsonData = ')[1].split('};')[0] + '}')
+			facilities = facilities_data['facilities']
+			for facility in facilities:
+				facility_list.append(facility['name'].lower())
+			return facility_list
+		except IndexError:
+			return ['']
+
+	def get_facilities_descriptions(self) -> dict[str, str]:
+		facilities_descriptions = {}
+		for category in FacilitiesCategories:
+			try:
+				facilities_descriptions[category.name] = self._get_facility_category(category.value)
+			except NoSuchElementException:
+				facilities_descriptions[category.name] = ''
+
+		return facilities_descriptions
+
 	def get_rooms(self) -> str:
 		room_str = ''
 		self.__driver.find_element(By.ID, 'rooms').click()
@@ -73,30 +97,7 @@ class TuiSiteData:
 		location_dict['lat_long'] = [latitude, longitude]
 		return location_dict
 
-	def get_facilities(self) -> list[str]:
-		facility_list = []
-		try:
-			facilities_data = json.loads(self.__page_source.split('accommFacilitiesJsonData = ')[1].split('};')[0] + '}')
-			facilities = facilities_data['facilities']
-			for facility in facilities:
-				facility_list.append(facility['name'].lower())
-			return facility_list
-		except IndexError:
-			return ['']
-
-	def get_meals(self) -> str:
-		board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
-		self.__driver.find_element(By.XPATH, '//*[@id="facilities"]').click()
-		try:
-			self.__driver.find_element(By.LINK_TEXT, 'FOOD AND DRINK').click()
-			board_description = self.__driver.find_element(
-				By.CLASS_NAME,
-				'Facilities__cardContet'
-			).text.strip()
-			board_description = re.sub(r'\([^<>]*\)', '', board_description)
-			return board_type + '\n' + board_description
-		except NoSuchElementException:
-			return ' '
+	# TODO call new facilities class
 
 	def get_images(self) -> list[str]:
 		hotel_images = []
@@ -116,6 +117,17 @@ class TuiSiteData:
 		resort_and_country = resort.split(",")
 		resort = resort_and_country[0].split(" ")[1]
 		return resort.strip().upper()
+
+	def _get_facility_category(self, div_num: int) -> str:
+		description = self.__driver.find_element(
+			By.XPATH,
+			f'//*[@id="facilitiesV3__component"]/div/div/div/div/div/div[{div_num}]/div[2]'
+		).text.strip()
+		if div_num == FacilitiesCategories.MEALS:
+			board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
+			description = board_type + '\n' + description
+		description = re.sub(r'\([^<>]*\)', '', description)
+		return description
 
 	def __dismiss_cookies_banner(self):
 		"""Close the cookies dialog that is present at the launch of new browser instance"""

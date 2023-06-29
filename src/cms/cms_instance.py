@@ -1,6 +1,8 @@
 import os
+import time
 
 from selenium.webdriver.chrome.webdriver import WebDriver
+
 from src.web_driver_factory import WebDriverFactory
 
 
@@ -23,6 +25,7 @@ class CmsInstance:
 		self.__browser_username = os.getenv('browser_username')
 		self.__browser_password = os.getenv('browser_password')
 		self.__admin_url = f'https://{self.__browser_username}:{self.__browser_password}@igetaway.co.uk/admin/'
+		time.sleep(2)
 		self.driver = self.__instantiate_site_driver()
 
 	def __instantiate_site_driver(self) -> WebDriver:

@@ -1,4 +1,5 @@
 import sys
+import time
 
 from src.cms.cms_instance import CmsInstance
 from src.cms.cms_pipeline import CmsOperations
@@ -60,6 +61,7 @@ if __name__ == '__main__':
 
 	)
 
+	time.sleep(2)
 	# Add data to CMS
 	cms_operations.instantiate_cms_add_page()
 	controller = cms_pipeline.read_data_and_enter_into_cms()
