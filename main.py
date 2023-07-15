@@ -51,7 +51,8 @@ if __name__ == '__main__':
 	cms_instance = CmsInstance()
 	web_driver = cms_instance.driver
 	cms_operations = CmsOperations(
-		web_driver=web_driver
+		web_driver=web_driver,
+		company_name=company_name
 	)
 
 	cms_pipeline = CmsPipeline(

@@ -8,6 +8,7 @@ from src.controller.inghams_controller import InghamsController
 from src.controller.tui_controller import TuiController
 from src.models.hotel_model import Hotel
 from src.util.hotel_data_helper import convert_json_list_to_hotel_obj_list
+from src.util.image_handler import LocalImageHandler
 
 
 class CmsPipeline:
@@ -38,7 +39,7 @@ class CmsPipeline:
 	@staticmethod
 	def check_for_failed_runs(company_controller: Union[InghamsController, TuiController]) -> bool:
 		try:
-			company_controller.read_data.read_data(failed_runs=True)
+			company_controller.read_data.read_data(failed_cms_runs=True)
 			return True
 		except FileNotFoundError:
 			return False
@@ -53,13 +54,15 @@ class CmsPipeline:
 			start_time = time.time()
 			hotel = hotels.pop(0)
 			try:
+				# Ensure images directory empty to prevent duplicate image uploads
+				LocalImageHandler(self.company_name).delete_images()
 				self.cms_operations.populate_new_listing(
 					source=self.company_name,
 					hotel=hotel)
 				time.sleep(1)
 				self.cms_operations.save_listing()
 			except Exception as e:
-				if e == TimeoutError:
+				if e == TimeoutError or e == AssertionError:
 					hotels = hotels.extend([hotel])
 					self.__delete_and_reinitialise_web_driver()
 				hotel.failed_reason = str(e)
@@ -77,7 +80,7 @@ class CmsPipeline:
 			company_controller: Union[InghamsController, TuiController, CrystalController]
 	):
 		try:
-			company_controller.read_data.read_data(failed_runs=True)
+			company_controller.read_data.read_data(failed_cms_runs=True)
 		except FileNotFoundError:
 			company_controller.save_data.create_json_file(failed_cms_runs=True)
 

@@ -16,9 +16,9 @@ from src.models.hotel_model import Hotel
 
 class CmsOperations:
 
-	def __init__(self, web_driver: WebDriver):
+	def __init__(self, web_driver: WebDriver, company_name: str):
 		self.driver = web_driver
-		self.cms_listing_mapper = CmsListingMapper(self.driver)
+		self.cms_listing_mapper = CmsListingMapper(self.driver, company_name)
 
 	def instantiate_cms_add_page(self):
 		"""Log in and navigate to the Add Accommodation page"""

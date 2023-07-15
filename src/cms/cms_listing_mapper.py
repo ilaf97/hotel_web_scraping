@@ -8,7 +8,7 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from src.util.image_handler import ImageHandler
+from src.util.image_handler import WebImageHandler, LocalImageHandler
 
 
 class CmsListingMapper:
@@ -17,14 +17,12 @@ class CmsListingMapper:
 	It maps data from the hotel properties to the correct CMS fields.
 	"""
 
-	def __init__(self, web_driver: WebDriver):
+	def __init__(self, web_driver: WebDriver, company_name: str):
 		self.driver = web_driver
-		self.__inghams_image_handler = \
-			ImageHandler(driver=self.driver, source_company='inghams')
-		self.__crystal_ski_image_handler = \
-			ImageHandler(driver=self.driver, source_company='crystal_ski')
-		self.__tui_image_handler = \
-			ImageHandler(driver=self.driver, source_company='tui')
+		self.company_name = company_name
+		self._web_image_handler = \
+			WebImageHandler(driver=self.driver, source_company=company_name)
+		self._local_image_handler = LocalImageHandler(source_company=company_name)
 
 	def add_hotel_name(self, name: str, slug: Optional[str]):
 		try:
@@ -157,24 +155,25 @@ class CmsListingMapper:
 			self.__add_inghams_images(images)
 		else:
 			self.__add_tui_images(images)
+		self._web_image_handler.check_images_present_in_final_listing()
 
 	def __add_inghams_images(self, images: dict[str, dict[str]]):
 		"""Add images from Inghams listings, including titles and alt text"""
 		for image, attributes in images.items():
-			self.__inghams_image_handler.save_image(image_name=image + '.jpg', image_url=attributes['src'])
-		image_paths = self.__inghams_image_handler.get_all_images_in_directory()
-		image_order = self.__inghams_image_handler.upload_and_select_images(image_paths)
+			self._local_image_handler.save_image(image_name=image + '.jpg', image_url=attributes['src'])
+		image_paths = self._local_image_handler.get_all_images_in_directory()
+		image_order = self._web_image_handler.upload_and_select_images(image_paths)
 		# Add image title and alt text
-		self.__inghams_image_handler.add_title_and_alt_text(image_order, images)
-		self.__inghams_image_handler.delete_images()
+		self._web_image_handler.add_title_and_alt_text(image_order, images)
+		self._local_image_handler.delete_images()
 
 	def __add_tui_images(self, images: list[str]):
 		for image_url in images:
 			image_name = str(image_url).split('/')[-1]
-			self.__tui_image_handler.save_image(image_name, image_url)
-		pathlist = self.__tui_image_handler.get_all_images_in_directory()
-		self.__tui_image_handler.upload_and_select_images(pathlist)
-		self.__tui_image_handler.delete_images()
+			self._local_image_handler.save_image(image_name, image_url)
+		pathlist = self._local_image_handler.get_all_images_in_directory()
+		self._web_image_handler.upload_and_select_images(pathlist)
+		self._local_image_handler.delete_images()
 
 	def __click_correct_facility_option_obj(self, option_num: int):
 		"""Click the correct DOM object corresponding to a given facility value"""

@@ -28,7 +28,7 @@ class SaveWebScrapingData:
 			hotel = {
 				"name": hotel.name,
 				"failed reason": hotel.failed_reason,
-				"url": hotel.url if isinstance(hotel, ScrapeFailHotel) else ""
+				"url": hotel.url if isinstance(hotel, ScrapeFailHotel) else "N/A"
 			}
 		"""Add data to the CSV file associated with the class attribute data"""
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'r+') as f:
