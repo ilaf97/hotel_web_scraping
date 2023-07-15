@@ -68,9 +68,9 @@ class ImageHandler:
 
 		try:
 			for counter, image in enumerate(image_paths):
-				if counter == 15:
+				if counter == 24:
 					break
-				if 0 < counter < 15:
+				if 0 < counter < 24:
 					# Add another image slider
 					self.__driver.find_element(
 						By.LINK_TEXT,

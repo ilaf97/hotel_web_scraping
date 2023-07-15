@@ -15,13 +15,16 @@ from src.models.data_fields_base_class import DataFieldsBaseClass
 
 class CrystalSiteData(DataFieldsBaseClass):
 
+	def __str__(self):
+		return "crystal_ski"
+
 	def __init__(self, driver: WebDriver):
-		self.__driver = driver
+		self.driver = driver
 		self.__dismiss_cookies_banner()
 		self.__page_source = driver.page_source
 
 	def get_name(self) -> str:
-		hotel_name_html_obj = self.__driver.find_element(By.TAG_NAME, 'h1')
+		hotel_name_html_obj = self.driver.find_element(By.TAG_NAME, 'h1')
 		return hotel_name_html_obj.text.strip().capitalize()
 
 	@staticmethod
@@ -31,7 +34,7 @@ class CrystalSiteData(DataFieldsBaseClass):
 		return new_slug
 
 	def get_resort(self) -> str:
-		location_description_obj = self.__driver.find_element(
+		location_description_obj = self.driver.find_element(
 			By.XPATH,
 			'//*[@id="headerContainer__component"]/div/div/div/div[1]/div[2]/span[1]/p'
 		)
@@ -53,7 +56,7 @@ class CrystalSiteData(DataFieldsBaseClass):
 		experience_levels = ['beginners', 'intermediates', 'advanced', 'boarders']
 		for level in experience_levels:
 			try:
-				level_div = self.__driver.find_element(By.CLASS_NAME, f'SkiResortInfo__{level}')
+				level_div = self.driver.find_element(By.CLASS_NAME, f'SkiResortInfo__{level}')
 			except NoSuchElementException:
 				break
 			best_for_dict[level] = (5 - len(get_empty_rating_rectangles(level_div))) * '★'
@@ -61,16 +64,16 @@ class CrystalSiteData(DataFieldsBaseClass):
 		return best_for_dict
 
 	def get_rooms(self) -> str:
-		self.__driver.find_element(By.XPATH, '//*[@id="rooms"]/a').click()
-		rooms = html.unescape(self.__driver.find_element(By.CLASS_NAME, 'SkiRoomInfo__roomInfoBlock').text.strip())
+		self.driver.find_element(By.XPATH, '//*[@id="rooms"]/a').click()
+		rooms = html.unescape(self.driver.find_element(By.CLASS_NAME, 'SkiRoomInfo__roomInfoBlock').text.strip())
 		return rooms
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
 		location_dict = {}
-		self.__driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
-		WebDriverWait(self.__driver, 10).until(EC.presence_of_element_located((By.ID, 'sights__component')))
+		self.driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
+		WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, 'sights__component')))
 		location_dict['description'] = \
-			html.unescape(self.__driver.find_element(
+			html.unescape(self.driver.find_element(
 				By.XPATH,
 				'//*[@id="locationEditorial__component"]/div/div'
 			).text.strip())
@@ -90,8 +93,8 @@ class CrystalSiteData(DataFieldsBaseClass):
 		return facilities_string
 
 	def get_meals(self) -> str:
-		board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
-		board_description = self.__driver.find_element(
+		board_type = self.driver.find_element(By.TAG_NAME, 'h4').text.strip()
+		board_description = self.driver.find_element(
 			By.XPATH,
 			'//*[@id="browseBoardBasis__component"]/div/div/div/div[2]/div[2]/p[1]'
 		).text.strip()
@@ -123,15 +126,15 @@ class CrystalSiteData(DataFieldsBaseClass):
 		"""Close the cookies dialog that is present at the launch of new browser instance"""
 
 		try:
-			self.__driver.find_element(By.ID, 'cmNotifyBanner')
+			self.driver.find_element(By.ID, 'cmNotifyBanner')
 		except NoSuchElementException:
 			return
 		try:
-			self.__driver.find_element(By.ID, 'cmDecline').click()
+			self.driver.find_element(By.ID, 'cmDecline').click()
 			return
 		except NoSuchElementException:
 			try:
-				self.__driver.find_element(By.ID, 'cmCloseBanner').click()
+				self.driver.find_element(By.ID, 'cmCloseBanner').click()
 				return
 			except NoSuchElementException as e:
 				raise Exception(f'Cannot close the cookies dialog! {e}')

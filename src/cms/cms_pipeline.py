@@ -62,7 +62,7 @@ class CmsPipeline:
 				if e == TimeoutError:
 					hotels = hotels.extend([hotel])
 					self.__delete_and_reinitialise_web_driver()
-				hotel.failed_reason = e.__str__()
+				hotel.failed_reason = str(e)
 				self.__record_failed_run(
 					company_controller=company_controller,
 					hotel=hotel)
@@ -79,9 +79,9 @@ class CmsPipeline:
 		try:
 			company_controller.read_data.read_data(failed_runs=True)
 		except FileNotFoundError:
-			company_controller.save_data.create_json_file(failed_runs=True)
+			company_controller.save_data.create_json_file(failed_cms_runs=True)
 
-		company_controller.save_data.add_data(hotel, failed_runs=True)
+		company_controller.save_data.add_data(hotel, failed_cms_runs=True)
 
 	def __delete_and_reinitialise_web_driver(self):
 		"""The aim of this is to speed up long-running executions that slow due to the driver instance"""

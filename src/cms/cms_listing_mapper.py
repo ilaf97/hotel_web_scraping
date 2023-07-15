@@ -58,7 +58,12 @@ class CmsListingMapper:
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find category field/change category\n{e}')
 
-	def add_text_description_field(self, text: str, description_type: str):
+	def add_text_description_field(
+			self,
+			text: str,
+			description_type: str,
+			facility_descriptions: Optional[dict[str, str]] = None
+	):
 
 		if description_type == 'description':
 			desc_field_no = 'one'
@@ -79,7 +84,11 @@ class CmsListingMapper:
 			if description_type in ['rooms', 'meals']:
 				text_area.send_keys(description_type.capitalize() + '\n\n' + text)
 			else:
-				text_area.send_keys(text)
+				facility_text = ''
+				for facility, description in facility_descriptions.items():
+					if facility != "MEALS":
+						facility_text = facility_text + '\n\n\n' + facility + '\n\n' + description
+				text_area.send_keys(text + facility_text)
 			self.driver.switch_to.default_content()
 		except NoSuchElementException as e:
 			raise NoSuchElementException(f'Cannot find description field/add description\n{e}')

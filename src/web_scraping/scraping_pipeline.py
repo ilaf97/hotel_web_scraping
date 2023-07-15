@@ -5,6 +5,7 @@ from tqdm import tqdm
 from src.controller.crystal_controller import CrystalController
 from src.controller.inghams_controller import InghamsController
 from src.controller.tui_controller import TuiController
+from src.models.hotel_model import ScrapeFailHotel
 
 
 class ScrapingPipeline:
@@ -44,6 +45,5 @@ class ScrapingPipeline:
 		for url in tqdm(url_list):
 			url_web_driver = company_controller.get_driver_obj(url.strip())
 			hotel = company_controller.get_hotel_obj(url_web_driver)
-			company_controller.save_data.add_data(hotel)
+			company_controller.save_data.add_data(hotel=hotel, failed_scrape_runs=isinstance(hotel, ScrapeFailHotel))
 			del hotel
-

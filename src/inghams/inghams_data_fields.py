@@ -5,15 +5,18 @@ from bs4 import BeautifulSoup, ResultSet
 
 class InghamsSiteData:
 
+	def __str__(self):
+		return "inghams"
+
 	def __init__(self, html_object: BeautifulSoup):
-		self.__html_object = html_object
+		self.html_object = html_object
 
 	def get_name(self) -> str:
-		hotel_name_html_obj = self.__html_object.find_all('h1', class_='c-heading-h1')[0]
+		hotel_name_html_obj = self.html_object.find_all('h1', class_='c-heading-h1')[0]
 		return hotel_name_html_obj.text.strip()
 
 	def get_description(self) -> str:
-		description_html_objs = self.__html_object.find(id='descriptionAccTop')
+		description_html_objs = self.html_object.find(id='descriptionAccTop')
 		p_tags = description_html_objs.find_all('p')
 		return self.__format_text(p_tags)
 
@@ -22,17 +25,17 @@ class InghamsSiteData:
 		return dict()
 
 	def get_rooms(self) -> str:
-		accommodation_tab_objs = self.__html_object.find(id='tabpanel0')
+		accommodation_tab_objs = self.html_object.find(id='tabpanel0')
 		p_tags = accommodation_tab_objs.find_all('p')
 		for index, p in enumerate(p_tags):
 			if p.text.strip() == 'Rooms':
-				room_description = p_tags[index+1:]
+				room_description = p_tags[index + 1:]
 				break
 		return self.__format_text(room_description)
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
 		location_dict = {}
-		location_tab_objs = self.__html_object.find(id='tabpanel5')
+		location_tab_objs = self.html_object.find(id='tabpanel5')
 		li_tags = location_tab_objs.find_all('li')
 		latitude = float(li_tags[1].text.split(': ')[1])
 		longitude = float(li_tags[0].text.split(': ')[1])
@@ -45,7 +48,7 @@ class InghamsSiteData:
 
 	def get_facilities(self) -> list[str]:
 		facilities_list = []
-		facilities_tab_objs = self.__html_object.find(id='tabpanel3')
+		facilities_tab_objs = self.html_object.find(id='tabpanel3')
 		ul_tags = facilities_tab_objs.find_all('ul')
 		for item in ul_tags:
 			facilities_list = facilities_list + (item.text.strip().split('\n'))
@@ -58,7 +61,7 @@ class InghamsSiteData:
 		return self.__get_all_tab_div_content('2')
 
 	def get_images(self):
-		image_objs = self.__html_object.find_all('div', class_='c-slider__list')[0]
+		image_objs = self.html_object.find_all('div', class_='c-slider__list')[0]
 		img_tags = image_objs.find_all('img')
 		img_name = image_objs.find_all('div', class_='c-slider__item')
 		image_data = {}
@@ -81,7 +84,7 @@ class InghamsSiteData:
 		"""
 
 		try:
-			tab_objs = self.__html_object.find(id='tabpanel' + panel_no)
+			tab_objs = self.html_object.find(id='tabpanel' + panel_no)
 			div = tab_objs.find_all('div', class_='c-accordion__content')
 			return self.__format_text(div)
 		except AttributeError:

@@ -15,3 +15,10 @@ class Hotel:
 	resort: Optional[str] = None
 	slug: Optional[str] = None
 	failed_reason: Optional[str] = None
+
+
+@dataclass
+class ScrapeFailHotel:
+	name: str
+	url: str
+	failed_reason: str

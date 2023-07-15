@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-class ReadData:
+class ReadWebScrapingData:
 	"""
 	Class for reading data from JSON or CSV format into Python variables.
 
@@ -29,12 +29,13 @@ class ReadData:
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/urls.csv', 'r') as f:
 			return f.readlines()
 
-	def read_data(self, failed_runs: bool = False) -> tuple[any, list]:
-		if failed_runs:
-			filename = self.filename + "-FAILS"
+	def read_data(self, failed_cms_runs: bool = False, failed_scrape_runs: bool = False) -> tuple[any, list]:
+		if failed_cms_runs:
+			filename = self.filename + "-CMS-FAILS"
+		elif failed_scrape_runs:
+			filename = self.filename + "-SCRAPE-FAILS"
 		else:
 			filename = self.filename
 		"""Returns headers and row iterator object from web scraping results CSV"""
 		with open(f'{self.__ROOT_DIR}/data/{self.source_company}/json_data/{filename}.json', 'r') as f:
 			return json.load(f)
-

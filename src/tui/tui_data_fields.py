@@ -11,13 +11,16 @@ from src.tui.facilities import FacilitiesCategories
 
 class TuiSiteData:
 
+	def __str__(self):
+		return "tui"
+
 	def __init__(self, driver: WebDriver):
-		self.__driver = driver
+		self.driver = driver
 		self.__dismiss_cookies_banner()
 		self.__page_source = driver.page_source
 
 	def get_name(self) -> str:
-		hotel_name_html_obj = self.__driver.find_element(By.TAG_NAME, 'h1')
+		hotel_name_html_obj = self.driver.find_element(By.TAG_NAME, 'h1')
 		return hotel_name_html_obj.text.strip()
 
 	@staticmethod
@@ -26,12 +29,12 @@ class TuiSiteData:
 
 	def get_resort(self) -> str:
 		try:
-			location_description_obj = self.__driver.find_element(
+			location_description_obj = self.driver.find_element(
 				By.XPATH,
 				'//*[@id="headerContainer__component"]/div/div/div/div[1]/div[2]/span[1]/p'
 			)
 		except NoSuchElementException:
-			location_description_obj = self.__driver.find_element(
+			location_description_obj = self.driver.find_element(
 				By.XPATH,
 				'//*[@id="headerContainer__component"]/div/div[1]/div/div[2]/div[2]/span[1]/p'
 			)
@@ -40,8 +43,8 @@ class TuiSiteData:
 		return resort
 
 	def get_description(self) -> str:
-		about_tab_objs = self.__driver.find_element(By.CLASS_NAME, 'About__content').text.strip()
-		disclaimer = self.__driver.find_element(By.XPATH, '//*[@id="disclaimer__component"]/div').text.strip()
+		about_tab_objs = self.driver.find_element(By.CLASS_NAME, 'About__content').text.strip()
+		disclaimer = self.driver.find_element(By.XPATH, '//*[@id="disclaimer__component"]/div').text.strip()
 		description = about_tab_objs + '\n' + disclaimer
 		description = re.sub(r'\([^<>]*\)', '', description)
 		return description
@@ -64,6 +67,7 @@ class TuiSiteData:
 
 	def get_facilities_descriptions(self) -> dict[str, str]:
 		facilities_descriptions = {}
+		self.driver.find_element(By.XPATH, '//*[@id="facilities"]').click()
 		for category in FacilitiesCategories:
 			try:
 				facilities_descriptions[category.name] = self._get_facility_category(category.value)
@@ -74,8 +78,8 @@ class TuiSiteData:
 
 	def get_rooms(self) -> str:
 		room_str = ''
-		self.__driver.find_element(By.ID, 'rooms').click()
-		rooms = self.__driver.find_elements(By.CLASS_NAME, 'UI__roomListWrapper')
+		self.driver.find_element(By.ID, 'rooms').click()
+		rooms = self.driver.find_elements(By.CLASS_NAME, 'UI__roomListWrapper')
 		for index, room in enumerate(rooms, start=1):
 			room_str = room_str + room.find_element(
 				By.XPATH,
@@ -85,9 +89,9 @@ class TuiSiteData:
 
 	def get_location(self) -> dict[str: Union[str, list[int]]]:
 		location_dict = {}
-		self.__driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
+		self.driver.find_element(By.XPATH, '//*[@id="location"]/a').click()
 		location_dict['description'] = \
-			self.__driver.find_element(
+			self.driver.find_element(
 				By.XPATH,
 				'//*[@id="locationEditorial__component"]/div/div/div/aside'
 			).text.strip()
@@ -96,8 +100,6 @@ class TuiSiteData:
 		longitude = float(lat_long['longitude'])
 		location_dict['lat_long'] = [latitude, longitude]
 		return location_dict
-
-	# TODO call new facilities class
 
 	def get_images(self) -> list[str]:
 		hotel_images = []
@@ -119,28 +121,33 @@ class TuiSiteData:
 		return resort.strip().upper()
 
 	def _get_facility_category(self, div_num: int) -> str:
-		description = self.__driver.find_element(
+		self.driver.find_element(By.XPATH,
+								 f'//*[@id="facilitiesV3__component"]/div/div/div[1]/ul/li[{div_num}]/a').click()
+		description = self.driver.find_element(
 			By.XPATH,
-			f'//*[@id="facilitiesV3__component"]/div/div/div/div/div/div[{div_num}]/div[2]'
+			f'//*[@id="facilitiesV3__component"]/div/div/div[2]/div'
 		).text.strip()
 		if div_num == FacilitiesCategories.MEALS:
-			board_type = self.__driver.find_element(By.TAG_NAME, 'h4').text.strip()
+			board_type = self.driver.find_element(By.TAG_NAME, 'h4').text.strip()
 			description = board_type + '\n' + description
+		# Replace brakets
 		description = re.sub(r'\([^<>]*\)', '', description)
+		# Add extra newline for formatting
+		description = re.sub(r"\n", r"\n\n", description)
 		return description
 
 	def __dismiss_cookies_banner(self):
 		"""Close the cookies dialog that is present at the launch of new browser instance"""
 		try:
-			self.__driver.find_element(By.ID, 'cmNotifyBanner')
+			self.driver.find_element(By.ID, 'cmNotifyBanner')
 		except NoSuchElementException:
 			return
 		try:
-			self.__driver.find_element(By.ID, 'cmDecline').click()
+			self.driver.find_element(By.ID, 'cmDecline').click()
 			return
 		except NoSuchElementException:
 			try:
-				self.__driver.find_element(By.ID, 'cmCloseBanner').click()
+				self.driver.find_element(By.ID, 'cmCloseBanner').click()
 				return
 			except NoSuchElementException as e:
 				raise Exception(f'Cannot close the cookies dialog! {e}')

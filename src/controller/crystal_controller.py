@@ -6,7 +6,7 @@ from src.controller.controller import BaseController
 from src.crystal_ski.crystal_data_fields import CrystalSiteData
 from src.models.hotel_model import Hotel
 from src.web_driver_factory import WebDriverFactory
-from src.web_scraping.read_data import ReadData
+from src.web_scraping.read_data import ReadWebScrapingData
 from src.web_scraping.save_data import SaveWebScrapingData
 
 company_name = "crystal_ski"
@@ -22,7 +22,7 @@ class CrystalController(BaseController):
 		)
 		self.__filename = filename
 		self.save_data = SaveWebScrapingData(self.__filename, company_name)
-		self.read_data = ReadData(self.__filename, company_name)
+		self.read_data = ReadWebScrapingData(self.__filename, company_name)
 
 	@staticmethod
 	def get_driver_obj(page_url: str) -> WebDriver:

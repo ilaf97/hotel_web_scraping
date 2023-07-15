@@ -42,6 +42,7 @@ class CmsOperations:
 		self.cms_listing_mapper.set_resort(hotel.resort)
 		self.cms_listing_mapper.add_text_description_field(
 			hotel.description,
+			facility_descriptions=hotel.facilities_descriptions,
 			description_type='description'
 		)
 		self.cms_listing_mapper.add_text_description_field(
@@ -53,7 +54,7 @@ class CmsOperations:
 			description_type='meals'
 		)
 		self.cms_listing_mapper.add_best_for(hotel.best_for)
-		self.cms_listing_mapper.select_individual_facilities(hotel.facilities)
+		self.cms_listing_mapper.select_individual_facilities(hotel.individual_facilities)
 		self.cms_listing_mapper.add_map_location(hotel.location)
 		self.cms_listing_mapper.remove_airport_info()
 		self.cms_listing_mapper.add_images(
